@@ -38,7 +38,7 @@ const DataTableWrapper = ({ data, tablePropsData, tablePropsColumn, customGetCol
 
   return (
     <>
-      <DataTable value={rows} {...tablePropsData} size="small" scrollable height={"100%"}>
+      <DataTable value={rows} {...tablePropsData} size="small" scrollable height={"100%"} virtualScrollerOptions={{ itemSize: 46 }}>
         {header}
       </DataTable>
     </>
