@@ -21,7 +21,7 @@ import LearningSidebar from "./sidebarTools/learningSidebar"
 import { ipcRenderer } from "electron"
 
 const LayoutManager = (props) => {
-  const [activeSidebarItem, setActiveSidebarItem] = useState("home") // State to keep track of active nav item
+  const [activeSidebarItem, setActiveSidebarItem] = useState("input") // State to keep track of active nav item
 
   const sidebarRef = useRef(null) // Reference to the sidebar object
 

@@ -5,102 +5,206 @@ import DataTableFromContext from "./dataTableFromContext"
 import { Tab, Tabs } from "react-bootstrap"
 import { ScrollPanel } from "primereact/scrollpanel"
 import { Divider } from "@blueprintjs/core"
+import { InputText } from "primereact/inputtext"
+
 import { DataTable } from "primereact/datatable"
 import { Column } from "primereact/column"
+var dataforge = require("data-forge-fs")
+console.log("dataforge", dataforge)
 /**
  * @description - This component is the dataset selector component that will show the datasets available in the workspace
  * @returns the dataset selector component
  * @param {Object} props - The props object
  *  @param {Object} props.keepOnlyFolder - The only parent folder to keep in the dataset selector
  */
-const LazyDataTable = () => {
+const LazyDataTable = ({
+  path = "C:\\Users\\nicol\\Downloads\\WS\\DATA\\customer_data.csv"
+}) => {
+  const [globalFilterValue, setGlobalFilterValue] = useState("")
+
   const { globalData } = useContext(DataContext) // We get the global data from the context to retrieve the directory tree of the workspace, thus retrieving the data files
-  const [datasetList, setDatasetList] = useState([])
-  const [selectedDatasets, setSelectedDatasets] = useState([])
-  const [tabMenuItems, setTabMenuItems] = useState([{ label: "Dataset", icon: "pi pi-fw pi-file" }])
   const [isLazyLoaded, setIsLazyLoaded] = useState(false)
+  const [columns, setColumns] = useState([])
 
   const [data, setData] = useState([])
-  const [first, setFirst] = useState(0)
-  const [rows, setRows] = useState(10)
   const [totalRecords, setTotalRecords] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [rows, setRows] = useState(null)
+  const [iDs, setIDs] = useState(null)
+  const [selectAll, setSelectAll] = useState(false)
+  const [selectedRows, setselectedRows] = useState(null)
+  const [lazyState, setlazyState] = useState({
+    first: 0,
+    rows: 10,
+    page: 1,
+    sortField: null,
+    sortOrder: null,
+    filters: null
+  })
+  const [lazyFilters, setLazyFilters] = useState({})
 
-  const lazyLoadData = (event) => {
+  function createObjectsFromDataset(dataset, columnNames) {
+    return dataset.map((row) => {
+      return row.reduce((obj, value, index) => {
+        obj[columnNames[index]] = value
+        return obj
+      }, {})
+    })
+  }
+
+  let networkTimeout = null
+
+  useEffect(() => {
+    loadLazyData()
+  }, [])
+
+  useEffect(() => {
+    console.log("DATA", data)
+  }, [data])
+
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value
+    let _filters = { ...filters }
+
+    _filters["global"].value = value
+
+    setLazyFilters(_filters)
+    setGlobalFilterValue(value)
+  }
+
+  const loadLazyData = () => {
     setLoading(true)
 
-    // Calculate the page number and number of records to fetch
-    const page = event.first / event.rows + 1
-    const pageSize = event.rows
-
-    // Read the file using the fs module
-    const fileData = fs.readFileSync("path/to/file.json", "utf8")
-
-    // Parse the file data using DanfoJS-Node
-    const df = danfo.DataFrame(fileData)
-
-    // Slice the data to get the current page
-    const startIndex = (page - 1) * pageSize
-    const endIndex = startIndex + pageSize
-    const slicedData = df.iloc(startIndex, endIndex).values
-
-    // Update the state with the fetched data
-    setData(slicedData)
-    setTotalRecords(df.shape[0])
-    setLoading(false)
-
-    // Update the state with the current page and number of records
-    setFirst(event.first)
-    setRows(event.rows)
-  }
-
-  function generateDatasetListFromDataContext(dataContext) {
-    let keys = Object.keys(dataContext)
-    let datasetListToShow = []
-    keys.forEach((key) => {
-      if (dataContext[key].type !== "folder") {
-        datasetListToShow.push(dataContext[key])
-      }
-    })
-    setDatasetList(datasetListToShow)
-  }
-
-  useEffect(() => {
-    if (globalData !== undefined) {
-      generateDatasetListFromDataContext(globalData)
+    if (networkTimeout) {
+      clearTimeout(networkTimeout)
     }
-  }, [globalData])
 
-  useEffect(() => {
-    console.log("tabMenuItems", tabMenuItems)
-  }, [tabMenuItems])
+    if (!isLazyLoaded) {
+      //imitate delay of a backend call
+      networkTimeout = setTimeout(
+        () => {
+          dataforge
+            .readFile(path)
+            .parseCSV({ dynamicTyping: true })
+            .then((data) => {
+              const columnNames = data.content.columnNames
+              const rows = data.content.values.rows
+              const dataObjects = createObjectsFromDataset(rows, columnNames)
+              setData(dataObjects)
+              setColumns(columnNames)
+              setTotalRecords(rows.length)
+              setLoading(false)
+              setIsLazyLoaded(true)
+
+              let newfilters = getFiltersFromColumns(columnNames)
+              setLazyFilters(newfilters)
+            })
+        },
+        Math.random() * 1000 + 250
+      )
+    }
+  }
+
+  const renderHeader = () => {
+    return (
+      <div className="flex justify-content-end">
+        <span className="p-input-icon-left">
+          <i className="pi pi-search" />
+          <InputText
+            value={globalFilterValue}
+            onChange={onGlobalFilterChange}
+            placeholder="Keyword Search"
+          />
+        </span>
+      </div>
+    )
+  }
+
+  function getFiltersFromColumns(columns) {
+    const filters = {}
+    for (let col of columns) {
+      filters[col] = { value: "", matchMode: "contains" }
+    }
+    return filters
+  }
+
+  const onPage = (event) => {
+    setlazyState(event)
+  }
+
+  const onSort = (event) => {
+    setlazyState(event)
+  }
+
+  const onFilter = (event) => {
+    event["first"] = 0
+    setlazyState(event)
+  }
+
+  const onSelectionChange = (event) => {
+    const value = event.value
+
+    setselectedRows(value)
+    // setSelectAll(value.length === totalRecords)
+  }
+
+  const onSelectAllChange = (event) => {
+    const selectAll = event.checked
+
+    if (selectAll) {
+      //   CustomerService.getCustomers().then((data) => {
+      //     setSelectAll(true)
+      //     setselectedRows(data.customers)
+      //   })
+    } else {
+      setSelectAll(false)
+      setselectedRows([])
+    }
+  }
 
   return (
     <>
-      <h1>Dataset Selector</h1>
-      <>
-        <ListBox
-          value={selectedDatasets}
-          onChange={(e) => {
-            console.log(e.value)
-            setSelectedDatasets(e.value)
-          }}
-          options={datasetList}
-          optionLabel="name"
-          className="listbox-multiple w-full md:w-14rem"
-        />
-        <Divider />
-        <>{console.log("TEST", selectedDatasets)}</>
+      <>{console.log("TEST")}</>
 
-        <>
-          {isLazyLoaded && (
-            <DataTable value={data} totalRecords={totalRecords} lazy first={first} rows={rows} loading={loading} onPage={lazyLoadData}>
-              <Column field="id" header="ID" />
-              <Column field="name" header="Name" />
-              <Column field="email" header="Email" />
-            </DataTable>
-          )}
-        </>
+      <>
+        {isLazyLoaded && (
+          <DataTable
+            header={renderHeader}
+            resizableColumns
+            showGridlines
+            style={{ width: "100%", height: "85%" }}
+            className="lazy-datatable"
+            size={"small"}
+            value={data}
+            filterDisplay="row"
+            dataKey="id"
+            first={lazyState.first}
+            totalRecords={totalRecords}
+            onPage={onPage}
+            onSort={onSort}
+            sortField={lazyState.sortField}
+            sortOrder={lazyState.sortOrder}
+            onFilter={onFilter}
+            filters={lazyFilters}
+            loading={loading}
+            selection={selectedRows}
+            onSelectionChange={onSelectionChange}
+            selectAll={selectAll}
+            onSelectAllChange={onSelectAllChange}
+          >
+            {columns.map((col) => (
+              <Column
+                key={col}
+                field={col}
+                header={col}
+                sortable
+                filter
+                filterPlaceholder="Search"
+                filterMenuStyle={{ width: "10rem" }}
+              />
+            ))}
+          </DataTable>
+        )}
       </>
     </>
   )

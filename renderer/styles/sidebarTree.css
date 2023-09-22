@@ -125,3 +125,15 @@
   bottom: 10px;
   background-color: #868686;
 }
+
+.lazy-datatable {
+  font-size: small;
+  padding: 0.2rem;
+}
+.lazy-datatable > .p-datatable {
+  padding: 0.1rem;
+}
+
+.lazy-datatable.p-datatable.p-datatable-sm .p-datatable-thead > tr > th {
+  padding: 0.1rem 0.1rem;
+}
