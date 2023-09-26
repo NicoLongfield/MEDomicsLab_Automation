@@ -1,15 +1,8 @@
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-  useEffect,
-  useContext
-} from "react"
+import React, { useState, useCallback, useMemo, useEffect, useContext } from "react"
 import { toast } from "react-toastify"
 import Form from "react-bootstrap/Form"
 import { useNodesState, useEdgesState, useReactFlow, addEdge } from "reactflow"
 import WorkflowBase from "../flow/workflowBase"
-import TreeMenu from "react-simple-tree-menu" // TODO: https://www.npmjs.com/package/react-simple-tree-menu change plus sign to chevron
 import { loadJsonSync, downloadJson } from "../../utilities/fileManagementUtils"
 import { requestJson } from "../../utilities/requests"
 import EditableLabel from "react-simple-editlabel"
@@ -18,6 +11,8 @@ import ProgressBarRequests from "../flow/progressBarRequests"
 import { PageInfosContext } from "../mainPages/moduleBasics/pageInfosContext"
 import { FlowFunctionsContext } from "../flow/context/flowFunctionsContext"
 import { FlowResultsContext } from "../flow/context/flowResultsContext"
+import { WorkspaceContext } from "../workspace/workspaceContext"
+import { ErrorRequestContext } from "../flow/context/errorRequestContext"
 
 // here are the different types of nodes implemented in the workflow
 import StandardNode from "./nodesTypes/standardNode"
@@ -51,14 +46,14 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
   const [MLType, setMLType] = useState("classification") // MLType is used to know which machine learning type is selected
   const { setViewport } = useReactFlow() // setViewport is used to update the viewport of the workflow
   const [treeData, setTreeData] = useState({}) // treeData is used to set the data of the tree menu
-  const [treeActiveKey, setTreeActiveKey] = useState(null) // treeActiveKey is used to know which node is selected in the tree menu
   const { getIntersectingNodes } = useReactFlow() // getIntersectingNodes is used to get the intersecting nodes of a node
   const [intersections, setIntersections] = useState([]) // intersections is used to store the intersecting nodes related to optimize nodes start and end
   const [isProgressUpdating, setIsProgressUpdating] = useState(false) // progress is used to store the progress of the workflow execution
   const { pageInfos } = useContext(PageInfosContext) // used to get the page infos such as id and config path
   const { groupNodeId, changeSubFlow } = useContext(FlowFunctionsContext)
-  const { setShowResultsPane, setWhat2show, updateFlowResults } =
-    useContext(FlowResultsContext)
+  const { updateFlowResults } = useContext(FlowResultsContext)
+  const { port } = useContext(WorkspaceContext)
+  const { setError } = useContext(ErrorRequestContext)
 
   // declare node types using useMemo hook to avoid re-creating component types unnecessarily (it memorizes the output) https://www.w3schools.com/react/react_usememo.asp
   const nodeTypes = useMemo(
@@ -71,6 +66,16 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
     []
   )
 
+  useEffect(() => {
+    console.log("pageInfos", pageInfos)
+    if (pageInfos.config && Object.keys(pageInfos.config).length > 0) {
+      updateScene(pageInfos.config)
+      toast.success("Config file has been loaded successfully")
+    } else {
+      console.log("No config file found for this page, base workflow will be used")
+    }
+  }, [pageInfos])
+
   // executed when the machine learning type is changed
   // it updates the possible settings of the nodes
   useEffect(() => {
@@ -82,22 +87,15 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
           ...node.data
         }
         if (!node.id.includes("opt")) {
-          let subworkflowType =
-            node.data.internal.subflowId != "MAIN" ? "optimize" : "learning"
+          let subworkflowType = node.data.internal.subflowId != "MAIN" ? "optimize" : "learning"
           console.log("subworkflowType", subworkflowType)
           console.log("staticNodesParams", staticNodesParams)
           console.log("node.data.internal.type", node.data.internal.type)
-          node.data.setupParam.possibleSettings = deepCopy(
-            staticNodesParams[subworkflowType][node.data.internal.type][
-              "possibleSettings"
-            ][MLType]
-          )
+          node.data.setupParam.possibleSettings = deepCopy(staticNodesParams[subworkflowType][node.data.internal.type]["possibleSettings"][MLType])
           node.data.internal.settings = {}
           node.data.internal.checkedOptions = []
           if (node.type == "selectionNode") {
-            node.data.internal.selection = Object.keys(
-              node.data.setupParam.possibleSettings
-            )[0]
+            node.data.internal.selection = Object.keys(node.data.setupParam.possibleSettings)[0]
           }
         }
         return node
@@ -119,6 +117,7 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
       setWorkflowType("optimize")
       hideNodesbut(groupNodeId.id)
     }
+    console.log("groupNodeId", groupNodeId)
   }, [groupNodeId])
 
   // executed when intersections array is changed
@@ -210,11 +209,7 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
         edge = {
           ...edge
         }
-        edge.hidden =
-          nodes.find((node) => node.id === edge.source).data.internal
-            .subflowId != activeSubflowId ||
-          nodes.find((node) => node.id === edge.target).data.internal
-            .subflowId != activeSubflowId
+        edge.hidden = nodes.find((node) => node.id === edge.source).data.internal.subflowId != activeSubflowId || nodes.find((node) => node.id === edge.target).data.internal.subflowId != activeSubflowId
         return edge
       })
     )
@@ -233,16 +228,12 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
 
       edges.forEach((edge) => {
         if (edge.source == node.id) {
-          let targetNode = deepCopy(
-            nodes.find((node) => node.id === edge.target)
-          )
+          let targetNode = deepCopy(nodes.find((node) => node.id === edge.target))
           if (targetNode.type != "groupNode") {
             let subIdText = ""
             let subflowId = targetNode.data.internal.subflowId
             if (subflowId != "MAIN") {
-              subIdText =
-                deepCopy(nodes.find((node) => node.id == subflowId)).data
-                  .internal.name + "."
+              subIdText = deepCopy(nodes.find((node) => node.id == subflowId)).data.internal.name + "."
             }
             children[targetNode.id] = {
               label: subIdText + targetNode.data.internal.name,
@@ -256,9 +247,7 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
 
     let treeMenuData = {}
     edges.forEach((edge) => {
-      let sourceNode = JSON.parse(
-        JSON.stringify(nodes.find((node) => node.id === edge.source))
-      )
+      let sourceNode = JSON.parse(JSON.stringify(nodes.find((node) => node.id === edge.source)))
       if (sourceNode.name == "Dataset") {
         treeMenuData[sourceNode.id] = {
           label: sourceNode.data.internal.name,
@@ -281,17 +270,11 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
   const onNodeDrag = useCallback(
     (event, node) => {
       let rawIntersects = getIntersectingNodes(node).map((n) => n.id)
-      rawIntersects = rawIntersects.filter(
-        (n) =>
-          nodes.find((node) => node.id == n).data.internal.subflowId ==
-          node.data.internal.subflowId
-      )
+      rawIntersects = rawIntersects.filter((n) => nodes.find((node) => node.id == n).data.internal.subflowId == node.data.internal.subflowId)
       let isNew = false
 
       // clear all intersections associated with
-      let newIntersections = intersections.filter(
-        (int) => int.sourceId !== node.id && int.targetId !== node.id
-      )
+      let newIntersections = intersections.filter((int) => int.sourceId !== node.id && int.targetId !== node.id)
 
       // add new intersections
       rawIntersects.forEach((rawIntersect) => {
@@ -316,13 +299,9 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
       })
       if (!isNew) {
         if (node.id.includes("opt")) {
-          setIntersections((intersects) =>
-            intersects.filter((int) => int.targetId !== node.id)
-          )
+          setIntersections((intersects) => intersects.filter((int) => int.targetId !== node.id))
         } else {
-          setIntersections((intersects) =>
-            intersects.filter((int) => int.sourceId !== node.id)
-          )
+          setIntersections((intersects) => intersects.filter((int) => int.sourceId !== node.id))
         }
       }
     },
@@ -339,41 +318,45 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
   const onLoad = useCallback(() => {
     let confirmation = true
     if (nodes.length > 0) {
-      confirmation = confirm(
-        "Are you sure you want to import a new experiment?\nEvery data will be lost."
-      )
+      confirmation = confirm("Are you sure you want to import a new experiment?\nEvery data will be lost.")
     }
     if (confirmation) {
       const restoreFlow = async () => {
-        const flow = await loadJsonSync() // wait for the json file to be loaded (see /utilities/fileManagementUtils.js)
-        console.log("loaded flow", flow)
-
-        Object.values(flow.nodes).forEach((node) => {
-          if (!node.id.includes("opt")) {
-            let subworkflowType =
-              node.data.internal.subflowId != "MAIN" ? "optimize" : "learning"
-            let setupParams = deepCopy(
-              staticNodesParams[subworkflowType][node.data.internal.type]
-            )
-            setupParams.possibleSettings =
-              setupParams["possibleSettings"][flow.MLType]
-            node.data.setupParam = setupParams
-          }
-        })
-
-        if (flow) {
-          const { x = 0, y = 0, zoom = 1 } = flow.viewport
-          setMLType(flow.MLType)
-          setNodes(flow.nodes || [])
-          setEdges(flow.edges || [])
-          setViewport({ x, y, zoom })
-          setIntersections(flow.intersections || [])
-        }
+        const newScene = await loadJsonSync()
+        updateScene(newScene)
       }
 
       restoreFlow()
     }
   }, [setNodes, setViewport, nodes])
+
+  /**
+   *
+   * @param {Object} newScene new scene to update the workflow
+   *
+   * This function updates the workflow with the new scene
+   */
+  const updateScene = (newScene) => {
+    console.log("newScene", newScene)
+    if (newScene) {
+      if (Object.keys(newScene).length > 0) {
+        Object.values(newScene.nodes).forEach((node) => {
+          if (!node.id.includes("opt")) {
+            let subworkflowType = node.data.internal.subflowId != "MAIN" ? "optimize" : "learning"
+            let setupParams = deepCopy(staticNodesParams[subworkflowType][node.data.internal.type])
+            setupParams.possibleSettings = setupParams["possibleSettings"][newScene.MLType]
+            node.data.setupParam = setupParams
+          }
+        })
+        const { x = 0, y = 0, zoom = 1 } = newScene.viewport
+        setMLType(newScene.MLType)
+        setNodes(newScene.nodes || [])
+        setEdges(newScene.edges || [])
+        setViewport({ x, y, zoom })
+        setIntersections(newScene.intersections || [])
+      }
+    }
+  }
 
   /**
    * @param {Object} id id of the node to delete
@@ -390,9 +373,7 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
           filteredNodes.push(n)
         }
         if (n.type == "groupNode") {
-          let childrenNodes = nds.filter(
-            (node) => node.data.internal.subflowId == id
-          )
+          let childrenNodes = nds.filter((node) => node.data.internal.subflowId == id)
           childrenNodes.forEach((node) => {
             onDeleteNode(node.id)
           })
@@ -421,9 +402,7 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
     // if the node is not a static node for a optimize subflow, it needs possible settings
     let setupParams = {}
     if (!newNode.id.includes("opt")) {
-      setupParams = deepCopy(
-        staticNodesParams[workflowType][newNode.data.internal.type]
-      )
+      setupParams = deepCopy(staticNodesParams[workflowType][newNode.data.internal.type])
       setupParams.possibleSettings = setupParams["possibleSettings"][MLType]
     }
     newNode.id = `${newNode.id}${associatedNode ? `.${associatedNode}` : ""}` // if the node is a sub-group node, it has the id of the parent node seperated by a dot. useful when processing only ids
@@ -436,22 +415,15 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
     let tempDefaultSettings = {}
     if (newNode.data.setupParam.possibleSettings) {
       "default" in newNode.data.setupParam.possibleSettings &&
-        Object.entries(newNode.data.setupParam.possibleSettings.default).map(
-          ([settingName, setting]) => {
-            tempDefaultSettings[settingName] =
-              defaultValueFromType[setting.type]
-          }
-        )
+        Object.entries(newNode.data.setupParam.possibleSettings.default).map(([settingName, setting]) => {
+          tempDefaultSettings[settingName] = defaultValueFromType[setting.type]
+        })
     }
     newNode.data.internal.settings = tempDefaultSettings
 
-    newNode.data.internal.selection =
-      newNode.type == "selectionNode" &&
-      Object.keys(setupParams.possibleSettings)[0]
+    newNode.data.internal.selection = newNode.type == "selectionNode" && Object.keys(setupParams.possibleSettings)[0]
     newNode.data.internal.checkedOptions = []
-    newNode.data.internal.subflowId = !associatedNode
-      ? groupNodeId.id
-      : associatedNode
+    newNode.data.internal.subflowId = !associatedNode ? groupNodeId.id : associatedNode
 
     return newNode
   }
@@ -502,7 +474,7 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
         onRun(null, id)
       }
     },
-    [reactFlowInstance, MLType, nodes, edges, intersections, treeData]
+    [reactFlowInstance, MLType, nodes, edges, intersections]
   )
 
   /**
@@ -516,42 +488,31 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
         flow.nodes.forEach((node) => {
           node.data.setupParam = null
         })
-        console.log("sended flow 1", flow)
 
         let { newflow, isValid } = cleanJson2Send(flow, up2Id)
-        console.log("newflow", isValid)
         flow = newflow
         if (isValid) {
-          console.log("sended flow 2", flow)
+          console.log("sended flow", flow)
+          console.log("port", port)
           setIsProgressUpdating(true)
-          requestJson(
-            5000,
-            "/learning/run_experiment",
-            flow,
-            (jsonResponse) => {
-              console.log("received results:", jsonResponse)
-              if (jsonResponse.error) {
-                setIsProgressUpdating(false)
-                toast.error("Error detected while running the experiment")
-              } else {
-                let results = {}
-                results.results = jsonResponse
-                results.nodes = nodes
-                updateFlowResults(results)
-              }
-            },
-            function (err) {
-              console.error(err)
-              toast.error("Error while running the experiment")
+          requestJson(port, "/learning/run_experiment", flow, (jsonResponse) => {
+            console.log("received results:", jsonResponse)
+            if (!jsonResponse.error) {
+              updateFlowResults(jsonResponse)
+            } else {
               setIsProgressUpdating(false)
+              toast.error("Error detected while running the experiment")
+              setError(jsonResponse.error)
             }
-          )
+          })
+        } else {
+          toast.warn("Workflow is not valid, maybe some default values are not set")
         }
       } else {
         toast.warn("react flow instance not found")
       }
     },
-    [reactFlowInstance, MLType, nodes, edges, intersections, treeData]
+    [reactFlowInstance, MLType, nodes, edges, intersections]
   )
 
   /**
@@ -570,40 +531,30 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
       const checkDefaultValues = (node) => {
         let isValid = true
         if ("default" in node.data.setupParam.possibleSettings) {
-          Object.entries(node.data.setupParam.possibleSettings.default).map(
-            ([settingName, setting]) => {
-              console.log("settingName", settingName)
-              console.log("settings", node)
-              if (settingName in node.data.internal.settings) {
-                if (
-                  node.data.internal.settings[settingName] ==
-                  defaultValueFromType[setting.type]
-                ) {
-                  isValid = false
-                }
-              } else {
+          Object.entries(node.data.setupParam.possibleSettings.default).map(([settingName, setting]) => {
+            console.log("settingName", settingName)
+            console.log("settings", node)
+            if (settingName in node.data.internal.settings) {
+              if (node.data.internal.settings[settingName] == defaultValueFromType[setting.type]) {
                 isValid = false
               }
+            } else {
+              isValid = false
             }
-          )
+          })
         }
         if (!isValid) {
-          toast.warn(
-            "Some default values are not set for node: " +
-              node.data.internal.name +
-              ".",
-            {
-              position: "bottom-right",
-              autoClose: 2000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "light",
-              toastId: "customId"
-            }
-          )
+          toast.warn("Some default values are not set for node: " + node.data.internal.name + ".", {
+            position: "bottom-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            toastId: "customId"
+          })
         }
         return isValid
       }
@@ -622,9 +573,7 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
           let nodeType = currentNode.data.internal.type
           let edgesCopy = deepCopy(edges)
           if (nodeType == "create_model") {
-            edgesCopy = edgesCopy.filter(
-              (edge) => edge.target == currentNode.id
-            )
+            edgesCopy = edgesCopy.filter((edge) => edge.target == currentNode.id)
             edgesCopy = edgesCopy.reduce((acc, edge) => {
               if (edge.target == currentNode.id) {
                 let sourceNode = nodes.find((node) => node.id == edge.source)
@@ -635,6 +584,27 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
               return acc
             }, [])
             hasModels = true
+          }
+
+          // refomat multiple list to backend to understand
+          if (nodeType == "compare_models") {
+            const reformatMultipleList = (list) => {
+              let newList = []
+              list.forEach((item) => {
+                newList.push(item.value)
+              })
+              return newList
+            }
+            let currentNodeCanModify = json.nodes.find((node) => node.id === key)
+            console.log(currentNodeCanModify)
+            if (currentNode.data.internal.settings.include) {
+              let reformattedList = reformatMultipleList(currentNode.data.internal.settings.include)
+              currentNodeCanModify.data.internal.settings.include = reformattedList
+            }
+            if (currentNode.data.internal.settings.exclude) {
+              let reformattedList = reformatMultipleList(currentNode.data.internal.settings.exclude)
+              currentNodeCanModify.data.internal.settings.exclude = reformattedList
+            }
           }
 
           // check if node has default values
@@ -709,9 +679,7 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
    * Clear the canvas if the user confirms
    */
   const onClear = useCallback(() => {
-    let confirmation = confirm(
-      "Are you sure you want to clear the canvas?\nEvery data will be lost."
-    )
+    let confirmation = confirm("Are you sure you want to clear the canvas?\nEvery data will be lost.")
     if (confirmation) {
       setNodes([])
       setEdges([])
@@ -727,24 +695,6 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
   }, [])
 
   /**
-   * @param {Object} info info about the node clicked
-   *
-   * This function is called when the user clicks on a tree item
-   *
-   */
-  const onTreeItemClick = (info) => {
-    if (info.key == treeActiveKey) {
-      setTreeActiveKey("null")
-      setShowResultsPane(false)
-      setWhat2show("")
-    } else {
-      setTreeActiveKey(info.key)
-      setShowResultsPane(true)
-      setWhat2show(info.key)
-    }
-  }
-
-  /**
    *
    * @param {String} value new value of the node name
    *
@@ -757,20 +707,17 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
     let newName = value
     if (value.length > 15) {
       newName = value.substring(0, 15)
-      toast.warn(
-        "Node name cannot be over 15 characters. Only the first 15 characters will be saved.",
-        {
-          position: "bottom-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          toastId: "customId"
-        }
-      )
+      toast.warn("Node name cannot be over 15 characters. Only the first 15 characters will be saved.", {
+        position: "bottom-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        toastId: "customId"
+      })
     }
     let groupNode = nodes.find((node) => node.id === groupNodeId.id)
     groupNode.data.internal.name = newName
@@ -798,32 +745,71 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
         groupNodeHandlingDefault={groupNodeHandlingDefault}
         onNodeDrag={onNodeDrag}
         // reprensents the visual over the workflow
+        uiTopRight={
+          <>
+            {workflowType == "learning" && (
+              <>
+                <Form.Select className="margin-left-10" aria-label="Default select example" value={MLType} onChange={(e) => setMLType(e.target.value)}>
+                  <option value="classification">Classification</option>
+                  <option value="regression">Regression</option>
+                  {/* <option value="survival-analysis">Survival Analysis</option> */}
+                </Form.Select>
+                <BtnDiv
+                  buttonsList={[
+                    { type: "run", onClick: onRun },
+                    { type: "clear", onClick: onClear },
+                    { type: "save", onClick: onSave },
+                    { type: "load", onClick: onLoad }
+                  ]}
+                />
+              </>
+            )}
+          </>
+        }
+        uiTopCenter={
+          <>
+            {workflowType == "optimize" && (
+              <>
+                <div>
+                  {groupNodeId.id != "MAIN" && (
+                    <div className="subFlow-title">
+                      <EditableLabel
+                        text={nodes.find((node) => node.id === groupNodeId.id).data.internal.name}
+                        labelClassName="node-editableLabel"
+                        inputClassName="node-editableLabel"
+                        inputWidth="20ch"
+                        inputHeight="45px"
+                        labelFontWeight="bold"
+                        inputFontWeight="bold"
+                        onFocusOut={(value) => {
+                          newNameHasBeenWritten(value)
+                        }}
+                      />
+
+                      <BtnDiv
+                        buttonsList={[
+                          {
+                            type: "back",
+                            onClick: onBack
+                          }
+                        ]}
+                      />
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </>
+        }
         ui={
           <>
-            {/* top left corner - Tree menu*/}
-            <div className="btn-panel-top-corner-left">
-              <TreeMenu
-                data={treeData}
-                onClickItem={onTreeItemClick}
-                debounceTime={125}
-                hasSearch={false}
-                activeKey={treeActiveKey}
-                focusKey={treeActiveKey}
-              />
-            </div>
-            {/* top right corner - buttons */}
+            {/* top right corner - buttons
             <div className="btn-panel-top-corner-right">
               {workflowType == "learning" && (
                 <>
-                  <Form.Select
-                    className="margin-left-10"
-                    aria-label="Default select example"
-                    value={MLType}
-                    onChange={(e) => setMLType(e.target.value)}
-                  >
+                  <Form.Select className="margin-left-10" aria-label="Default select example" value={MLType} onChange={(e) => setMLType(e.target.value)}>
                     <option value="classification">Classification</option>
                     <option value="regression">Regression</option>
-                    {/* <option value="survival-analysis">Survival Analysis</option> */}
                   </Form.Select>
                   <BtnDiv
                     buttonsList={[
@@ -835,19 +821,16 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
                   />
                 </>
               )}
-            </div>
+            </div> */}
             {/* top center - title when is sub group */}
-            <div className="btn-panel-top-center">
+            {/* <div className="btn-panel-top-center">
               {workflowType == "optimize" && (
                 <>
                   <div>
                     {groupNodeId.id != "MAIN" && (
                       <div className="subFlow-title">
                         <EditableLabel
-                          text={
-                            nodes.find((node) => node.id === groupNodeId.id)
-                              .data.internal.name
-                          }
+                          text={nodes.find((node) => node.id === groupNodeId.id).data.internal.name}
                           labelClassName="node-editableLabel"
                           inputClassName="node-editableLabel"
                           inputWidth="20ch"
@@ -872,13 +855,10 @@ const Workflow = ({ setWorkflowType, workflowType }) => {
                   </div>
                 </>
               )}
-            </div>
+            </div> */}
             {/* bottom center - progress bar */}
             <div className="panel-bottom-center">
-              <ProgressBarRequests
-                isUpdating={isProgressUpdating}
-                setIsUpdating={setIsProgressUpdating}
-              />
+              <ProgressBarRequests isUpdating={isProgressUpdating} setIsUpdating={setIsProgressUpdating} />
             </div>
           </>
         }
