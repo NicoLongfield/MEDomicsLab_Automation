@@ -3,15 +3,14 @@ import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels"
 import resizable from "../../styles/resizable.module.css"
 import IconSidebar from "../layout/iconSidebar"
 import Home from "../mainPages/home"
-import Input from "../mainPages/input"
-import Learning from "../mainPages/learning"
-import ExtractionMEDimagePage from "../mainPages/extractionMEDimage"
-import ExtractionImagePage from "../mainPages/extractionImage"
-import ExtractionTextPage from "../mainPages/extractionText"
-import ExtractionTSPage from "../mainPages/extractionTS"
-import ExploratoryPage from "../mainPages/exploratory"
-import ResultsPage from "../mainPages/results"
-import ApplicationPage from "../mainPages/application"
+import Input from "../mainPages/layerDesign/input"
+import Learning from "../mainPages/layerDevelopment/learning"
+import ExtractionMEDimagePage from "../mainPages/layerDesign/extractionMEDimage"
+import ExtractionImagePage from "../mainPages/layerDesign/extractionImage"
+import ExtractionTextPage from "../mainPages/layerDesign/extractionText"
+import ExtractionTSPage from "../mainPages/layerDesign/extractionTS"
+import ExploratoryPage from "../mainPages/layerDesign/exploratory"
+import ApplicationPage from "../mainPages/layerDeployment/applicationPage"
 import HomeSidebar from "./sidebarTools/pageSidebar/homeSidebar"
 import ExplorerSidebar from "./sidebarTools/pageSidebar/explorerSidebar"
 import SearchSidebar from "./sidebarTools/pageSidebar/searchSidebar"
@@ -22,7 +21,7 @@ import ExtractionSidebar from "./sidebarTools/pageSidebar/extractionSidebar"
 import EvaluationSidebar from "./sidebarTools/pageSidebar/evaluationSidebar"
 import { ipcRenderer } from "electron"
 import { MainContainer } from "./flexlayout/mainContainerClass"
-import EvaluationPage from "../mainPages/evaluation"
+import EvaluationPage from "../mainPages/layerDevelopment/evaluation"
 import SidebarDirectoryTreeControlled from "./sidebarTools/directoryTree/sidebarDirectoryTreeControlled"
 import { Accordion, Stack } from "react-bootstrap"
 import { LayoutModelContext } from "./layoutContext"
@@ -119,8 +118,6 @@ const LayoutManager = (props) => {
           return <ExtractionImagePage pageId="678" />
         case "exploratory":
           return <ExploratoryPage />
-        case "results":
-          return <ResultsPage />
         case "evaluation":
           return <EvaluationPage />
         case "application":
