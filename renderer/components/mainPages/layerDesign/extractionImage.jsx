@@ -1,6 +1,6 @@
 import React from "react"
-import ModulePage from "./moduleBasics/modulePage"
-import ExtractionJPG from "../extractionImage/extractionJPG"
+import ModulePage from "../moduleBasics/modulePage"
+import ExtractionJPG from "../../extractionImage/extractionJPG"
 
 const ExtractionImagePage = ({ pageId, configPath = "" }) => {
   return (

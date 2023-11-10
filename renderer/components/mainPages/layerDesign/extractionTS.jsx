@@ -1,6 +1,6 @@
-import ExtractionTabularData from "../extractionTabular/extractionTabularData"
+import ExtractionTabularData from "../../extractionTabular/extractionTabularData"
 import React from "react"
-import ModulePage from "./moduleBasics/modulePage"
+import ModulePage from "../moduleBasics/modulePage"
 
 const ExtractionTSPage = ({ pageId, configPath = "" }) => {
   return (

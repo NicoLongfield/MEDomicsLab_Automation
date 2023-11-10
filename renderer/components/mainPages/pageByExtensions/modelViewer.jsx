@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from "react"
-import ModulePage from "./moduleBasics/modulePage"
-import { PageInfosContext } from "./moduleBasics/pageInfosContext"
+import ModulePage from "../moduleBasics/modulePage"
+import { PageInfosContext } from "../moduleBasics/pageInfosContext"
 import Path from "path"
 
 /**

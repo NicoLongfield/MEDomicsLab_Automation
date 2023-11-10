@@ -1,12 +1,12 @@
 import React, { useState } from "react"
-import DatasetSelector from "./dataComponents/datasetSelector"
-import ModulePage from "./moduleBasics/modulePage"
+import DatasetSelector from "../dataComponents/datasetSelector"
+import ModulePage from "../moduleBasics/modulePage"
 import { Accordion } from "react-bootstrap"
-import MergeTool from "../input/mergeTool"
-import GroupingTool from "../input/groupingTool"
-import SimpleCleaningTool from "../input/simpleCleaningTool"
-import HoldOutSetCreationTool from "../input/holdOutSetCreationTool"
-import SubsetCreationTool from "../input/subsetCreationTool"
+import MergeTool from "../../input/mergeTool"
+import GroupingTool from "../../input/groupingTool"
+import SimpleCleaningTool from "../../input/simpleCleaningTool"
+import HoldOutSetCreationTool from "../../input/holdOutSetCreationTool"
+import SubsetCreationTool from "../../input/subsetCreationTool"
 
 /**
  * @description - This component is the input page of the application

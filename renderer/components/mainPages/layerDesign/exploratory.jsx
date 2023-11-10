@@ -1,24 +1,24 @@
 import React, { useState, useContext, useEffect } from "react"
-import ModulePage from "./moduleBasics/modulePage"
+import ModulePage from "../moduleBasics/modulePage"
 import { Card } from "primereact/card"
-import Input from "../learning/input"
+import Input from "../../learning/input"
 import { Tag } from "primereact/tag"
 import { Tooltip } from "primereact/tooltip"
 import { Button } from "primereact/button"
 import { ToggleButton } from "primereact/togglebutton"
-import { requestBackend } from "../../utilities/requests"
-import { downloadFilePath } from "../../utilities/fileManagementUtils"
-import { WorkspaceContext } from "../workspace/workspaceContext"
-import { DataContext } from "../workspace/dataContext"
-import { ErrorRequestContext } from "../generalPurpose/errorRequestContext"
-import { LayoutModelContext } from "../layout/layoutContext"
+import { requestBackend } from "../../../utilities/requests"
+import { downloadFilePath } from "../../../utilities/fileManagementUtils"
+import { WorkspaceContext } from "../../workspace/workspaceContext"
+import { DataContext } from "../../workspace/dataContext"
+import { ErrorRequestContext } from "../../generalPurpose/errorRequestContext"
+import { LayoutModelContext } from "../../layout/layoutContext"
 import Path from "path"
-import MedDataObject from "../workspace/medDataObject"
-import ProgressBarRequests from "../generalPurpose/progressBarRequests"
-import { LoaderContext } from "../generalPurpose/loaderContext"
+import MedDataObject from "../../workspace/medDataObject"
+import ProgressBarRequests from "../../generalPurpose/progressBarRequests"
+import { LoaderContext } from "../../generalPurpose/loaderContext"
 import { Stack } from "react-bootstrap"
 import { IoClose } from "react-icons/io5"
-import { getId } from "../../utilities/staticFunctions"
+import { getId } from "../../../utilities/staticFunctions"
 
 /**
  *
@@ -318,13 +318,13 @@ const YDataProfiling = ({ pageId, port, setError }) => {
 }
 
 /**
- * 
+ *
  * @param {String} uniqueId The unique id of the process
  * @param {String} pageId The page id
  * @param {Number} port The port of the backend
  * @param {Function} setError The function to set the error
  * @param {Function} onDelete The function to delete the process
- * 
+ *
  * @returns A card with the D-Tale module
  */
 const DTaleProcess = ({ uniqueId, pageId, port, setError, onDelete }) => {
@@ -337,9 +337,9 @@ const DTaleProcess = ({ uniqueId, pageId, port, setError, onDelete }) => {
   const [name, setName] = useState("")
 
   /**
-   * 
+   *
    * @param {String} serverPath The server path
-   * @description This function is used to shutdown the dtale server 
+   * @description This function is used to shutdown the dtale server
    */
   const shutdownDTale = (serverPath) => {
     console.log("shutting down dtale: ", serverPath)
@@ -403,7 +403,7 @@ const DTaleProcess = ({ uniqueId, pageId, port, setError, onDelete }) => {
   }
 
   /**
-   * 
+   *
    * @param {String} urlPath The url path to open
    * @param {String} uniqueId The unique id of the process
    */
@@ -462,8 +462,8 @@ const DTale = ({ pageId, port, setError }) => {
   }, [processes])
 
   /**
-   * 
-   * @param {String} uniqueId The unique id of the process 
+   *
+   * @param {String} uniqueId The unique id of the process
    */
   const onDelete = (uniqueId) => {
     console.log("deleting", uniqueId)
