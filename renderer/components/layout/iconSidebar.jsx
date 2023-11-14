@@ -245,10 +245,10 @@ const IconSidebar = ({ onSidebarItemSelect }) => {
               <Nav.Link className="evaluationNav btnSidebar align-center" data-pr-at="right center" data-pr-my="left center" data-pr-tooltip="Evaluation" eventKey="Evaluation" onClick={(event) => handleClick(event, "evaluation")} disabled={disabledIcon}>
                 <PiFlaskFill style={{ height: "2.2rem", width: "auto" }} />
               </Nav.Link>
+              <NavDropdown.Divider style={{ height: "3rem", width: "100%", zIndex: "3" }} />
             </div>
             <div className="medomics-layer-text">Development</div>
           </div>
-          <NavDropdown.Divider style={{ height: "3rem" }} />
 
           <div className="medomics-layer deployment">
             <div className="sidebar-icons">

@@ -245,7 +245,7 @@ const loadCSVPath = (path, whenLoaded) => {
   const cwd = process.cwd()
   let cwdSlashType = cwd.includes("/") ? "/" : "\\"
   let cwdSlashTypeInv = cwdSlashType == "/" ? "\\" : "/"
-  Path.charAt(0) == "." && (path = cwd + path.substring(1).replaceAll(cwdSlashTypeInv, cwdSlashType))
+  path.charAt(0) == "." && (path = cwd + path.substring(1).replaceAll(cwdSlashTypeInv, cwdSlashType))
   console.log("reading csv file: " + path)
   try {
     fs.createReadStream(path)

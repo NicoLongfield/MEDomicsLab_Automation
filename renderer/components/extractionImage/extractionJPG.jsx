@@ -13,6 +13,8 @@ import ProgressBarRequests from "../generalPurpose/progressBarRequests"
 import { toast } from "react-toastify"
 import { WorkspaceContext } from "../workspace/workspaceContext"
 import { ErrorRequestContext } from "../generalPurpose/errorRequestContext"
+import Path from "path"
+import { TYPE } from "../workspace/dataStepsUtils"
 
 /**
  *
@@ -45,7 +47,7 @@ const ExtractionJPG = ({ extractionTypeList, serverUrl, defaultFilename }) => {
   const [showProgressBar, setShowProgressBar] = useState(false) // wether to show or not the extraction progressbar
   const { setError } = useContext(ErrorRequestContext)
 
-  const { globalData } = useContext(DataContext) // we get the global data from the context to retrieve the directory tree of the workspace, thus retrieving the data files
+  const { globalData, setGlobalData } = useContext(DataContext) // we get the global data from the context to retrieve the directory tree of the workspace, thus retrieving the data files
   const { port } = useContext(WorkspaceContext) // we get the port for server connexion
 
   /**
@@ -87,6 +89,23 @@ const ExtractionJPG = ({ extractionTypeList, serverUrl, defaultFilename }) => {
     setRunning(true)
     setShowProgressBar(true)
     // Run extraction process
+    let filenameAbs = Path.join(Path.dirname(selectedFolder?.path), filename)
+    let dataObject = new MedDataObject({
+      originalName: "ts_extracted_features.csv",
+      name: "ts_extracted_features.csv",
+      type: "file",
+      parentID: selectedFolder.getUUID(),
+      path: filenameAbs
+    })
+    dataObject.addStep(TYPE.IMAGE, extractionJsonData)
+    let newGlobalData = { ...globalData }
+    Object.values(newGlobalData).forEach((value) => {
+      if (value.path == filenameAbs) {
+        dataObject.setUUID(value.getUUID())
+      }
+    })
+    newGlobalData[dataObject.getUUID()] = dataObject
+    setGlobalData(newGlobalData)
     requestJson(
       port,
       serverUrl + extractionFunction,

@@ -66,11 +66,15 @@ const Input = ({ name, settingInfos, currentValue, onInputChange, disabled, setH
   }
 
   const createTooltip = (tooltip, tooltipId) => {
-    return (
-      <Tooltip className="tooltip" anchorSelect={`#${tooltipId}`} delayShow={1000} place="left">
-        <Markup content={tooltip} />
-      </Tooltip>
-    )
+    if (tooltip) {
+      return (
+        <Tooltip className="tooltip" anchorSelect={`#${tooltipId}`} delayShow={1000} place="left">
+          <Markup content={tooltip} />
+        </Tooltip>
+      )
+    } else {
+      return <></>
+    }
   }
 
   // execute this when an input is updated
@@ -114,7 +118,7 @@ const Input = ({ name, settingInfos, currentValue, onInputChange, disabled, setH
       case "string":
         return (
           <>
-            <FloatingLabel id={name} controlId={name} label={name} className=" input-hov">
+            <FloatingLabel id={name.replaceAll("_", "")} controlId={name} label={name} className=" input-hov">
               <Form.Control
                 disabled={disabled}
                 type="text"
@@ -128,7 +132,7 @@ const Input = ({ name, settingInfos, currentValue, onInputChange, disabled, setH
                 }
               />
             </FloatingLabel>
-            {createTooltip(settingInfos.tooltip, name)}
+            {createTooltip(settingInfos.tooltip, name.replaceAll("_", ""))}
           </>
         )
       // for integer input
@@ -334,7 +338,7 @@ const Input = ({ name, settingInfos, currentValue, onInputChange, disabled, setH
                 disabled={disabled}
                 selectedPath={currentValue}
                 acceptedExtensions={["csv"]}
-                acceptFolder= {settingInfos.acceptFolder? settingInfos.acceptFolder : false}
+                acceptFolder={settingInfos.acceptFolder ? settingInfos.acceptFolder : false}
                 onChange={(e, path) => {
                   console.log("e", e, path)
                   if (path == "") {

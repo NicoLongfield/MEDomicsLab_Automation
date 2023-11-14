@@ -12,6 +12,8 @@ import { requestJson } from "../../utilities/requests"
 import { toast } from "react-toastify"
 import { WorkspaceContext } from "../workspace/workspaceContext"
 import ProgressBarRequests from "../generalPurpose/progressBarRequests"
+import { ErrorRequestContext } from "../generalPurpose/errorRequestContext"
+import Path from "path"
 
 /**
  *
@@ -25,7 +27,7 @@ import ProgressBarRequests from "../generalPurpose/progressBarRequests"
  * Its composition depend on the type of extraction choosen.
  *
  */
-const ExtractionTabularData = ({ extractionTypeList, serverUrl, defaultFilename }) => {
+const ExtractionTabularData = ({ extractionTypeList, serverUrl, defaultFilename, execType = "" }) => {
   const [areResultsLarge, setAreResultsLarge] = useState(false) // if the results are too large we don't display them
   const [csvPath, setCsvPath] = useState("") // csv path of data to extract
   const [csvResultPath, setCsvResultPath] = useState("") // csv path of extracted data
@@ -45,8 +47,9 @@ const ExtractionTabularData = ({ extractionTypeList, serverUrl, defaultFilename 
   const [resultDataset, setResultDataset] = useState(null) // dataset of extracted data used to be display
   const [selectedDataset, setSelectedDataset] = useState(null) // dataset of data to extract used to be display
   const [showProgressBar, setShowProgressBar] = useState(false) // wether to show or not the extraction progressbar
-  const { globalData } = useContext(DataContext) // we get the global data from the context to retrieve the directory tree of the workspace, thus retrieving the data files
+  const { globalData, setGlobalData } = useContext(DataContext) // we get the global data from the context to retrieve the directory tree of the workspace, thus retrieving the data files
   const { port } = useContext(WorkspaceContext) // we get the port for server connexion
+  const { setError } = useContext(ErrorRequestContext)
 
   /**
    *
@@ -119,18 +122,40 @@ const ExtractionTabularData = ({ extractionTypeList, serverUrl, defaultFilename 
     setMayProceed(false)
     setShowProgressBar(true)
     // Run extraction process
+
+    let filenameAbs = Path.join(Path.dirname(csvPath), filename)
+    console.log("running extraction with settings: ", extractionJsonData, csvPath, filename)
+    let dataObjectCsvPathParent = MedDataObject.checkIfMedDataObjectInContextbyPath(Path.dirname(csvPath), globalData)
+
+    let dataObject = new MedDataObject({
+      originalName: "ts_extracted_features.csv",
+      name: "ts_extracted_features.csv",
+      type: "file",
+      parentID: dataObjectCsvPathParent.getUUID(),
+      path: filenameAbs
+    })
+    dataObject.addStep(execType, extractionJsonData)
+    let newGlobalData = { ...globalData }
+    Object.values(newGlobalData).forEach((value) => {
+      if (value.path == filenameAbs) {
+        dataObject.setUUID(value.getUUID())
+      }
+    })
+    newGlobalData[dataObject.getUUID()] = dataObject
+    setGlobalData(newGlobalData)
     requestJson(
       port,
       serverUrl + extractionFunction,
       {
         relativeToExtractionType: extractionJsonData,
         csvPath: csvPath,
-        filename: filename
+        filename: filenameAbs
       },
       (jsonResponse) => {
         console.log("received results:", jsonResponse)
         if (!jsonResponse.error) {
           setCsvResultPath(jsonResponse["csv_result_path"])
+
           setExtractionStep("Extracted Features Saved")
           MedDataObject.updateWorkspaceDataObject()
           setExtractionProgress(100)
@@ -138,6 +163,7 @@ const ExtractionTabularData = ({ extractionTypeList, serverUrl, defaultFilename 
           setDisplayResults(areResultsLarge == false)
         } else {
           toast.error(`Extraction failed: ${jsonResponse.error.message}`)
+          setError(jsonResponse.error)
           setExtractionStep("")
           setShowProgressBar(false)
         }

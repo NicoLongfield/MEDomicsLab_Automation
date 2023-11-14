@@ -287,7 +287,7 @@ def BioBERT_extraction():
         # Save extracted features
         progress = 90
         step = "Save extracted features"
-        csv_result_path = os.path.join(str(Path(json_config["csvPath"]).parent.absolute()), json_config['filename'])
+        csv_result_path = json_config['filename']
         df_extracted_features.to_csv(csv_result_path, index=False)
         json_config["csv_result_path"] = csv_result_path
 

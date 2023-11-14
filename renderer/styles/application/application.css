@@ -51,3 +51,8 @@
 .div-predictions-file > .p-button {
   width: 100%;
 }
+
+.p-frozen-column {
+  background-color: var(--bs-light) !important;
+  font-weight: bold;
+}
