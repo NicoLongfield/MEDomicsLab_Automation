@@ -3,7 +3,7 @@ import React from "react"
 import { loadJsonPath } from "../../../utilities/fileManagementUtils"
 import { deepCopy } from "../../../utilities/staticFunctions"
 import { XSquare } from "react-bootstrap-icons"
-import * as echarts from "echarts/core"
+import * as echarts from "echarts"
 import ReactECharts from "echarts-for-react"
 import * as d3 from "d3"
 import { Col, Row } from "react-bootstrap"
@@ -14,9 +14,6 @@ import { MultiSelect } from "primereact/multiselect"
 import MedDataObject from "../../workspace/medDataObject"
 import { toast } from "react-toastify"
 import { confirmDialog } from "primereact/confirmdialog"
-// import echarts from "../../../../node_modules/echarts/"
-
-// const darkTheme = require("../../../styles/input/medCohortFigureDark.json")
 
 /**
  * @class MEDcohortFigureClass
@@ -24,7 +21,6 @@ import { confirmDialog } from "primereact/confirmdialog"
  * @classdesc Class component that renders a figure of the MEDcohort data.
  * @param {Object} props
  * @param {String} props.jsonFilePath - Path to the MEDcohort json file.
- * @param {String} props.classes - Classes to be displayed in the figure.
  */
 class MEDcohortFigureClass extends React.Component {
   /**
@@ -61,7 +57,7 @@ class MEDcohortFigureClass extends React.Component {
       selectedData: [],
       timePointClusters: [],
       echartsOptions: null,
-      classes: this.props.classes,
+      classes: new Set(),
       darkMode: false
     }
     this.chartRef = React.createRef()
@@ -87,8 +83,15 @@ class MEDcohortFigureClass extends React.Component {
     })
   }
 
+  /**
+   * Invoked immediately before a component is unmounted and destroyed.
+   * Removes the event listener for the dark mode.
+   * @function
+   * @returns {void}
+   * @listens window.matchMedia
+   */
   componentWillUnmount() {
-    window.matchMedia("(prefers-color-scheme)").removeEventListener("change", (e) => {})
+    window.matchMedia("(prefers-color-scheme)").removeEventListener("change", () => {})
   }
 
   /**
@@ -98,6 +101,7 @@ class MEDcohortFigureClass extends React.Component {
    * @returns {void}
    */
   componentDidUpdate(prevProps, prevState) {
+    // eslint-disable-next-line no-undef
     echarts.registerTheme("dark", require("../../../styles/input/medCohortFigureDark.json"))
 
     if (this.chartRef.current !== null) {
