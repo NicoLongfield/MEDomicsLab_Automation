@@ -1190,7 +1190,28 @@ export default class MedDataObject {
     } else if (extension === "json") {
       data = await dfd.readJSON(filePath)
     }
+
     return data
+  }
+
+  /**
+   * Checks every columns if they are prefixed with some tags (split by _|_) and add the tags to the metadata
+   * @param {Array} columns - The columns of the data object.
+   * @returns {Array} - The columns of the data object with the tags added to the metadata.
+   */
+  automaticTaggingOfColumns(columns) {
+    let newColumns = []
+    for (let column of columns) {
+      let tags = column.split("_|_")
+      if (tags.length > 1) {
+        let columnName = tags.pop()
+        this.metadata.tags[columnName] = tags
+        newColumns.push(columnName)
+      } else {
+        newColumns.push(column)
+      }
+    }
+    return newColumns
   }
 
   /**
