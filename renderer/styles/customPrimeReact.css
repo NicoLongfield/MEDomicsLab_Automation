@@ -460,6 +460,13 @@
   font-weight: 600;
 }
 
+.custom-token.custom-bp-table .p-chip-text {
+  padding: 0.0rem 0rem !important;
+  margin: 0rem !important;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
 .custom-token .p-icon {
   margin: 0rem !important;
 }

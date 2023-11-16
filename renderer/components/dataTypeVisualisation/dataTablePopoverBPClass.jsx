@@ -6,6 +6,8 @@ import { Stack } from "react-bootstrap"
 import { DataContext } from "../workspace/dataContext"
 import { Utils as danfoUtils } from "danfojs-node"
 import { deepCopy } from "../../utilities/staticFunctions"
+import { Chip } from "primereact/chip"
+import { generateRandomColor } from "../input/taggingUtils"
 
 const dfUtils = new danfoUtils()
 
@@ -47,6 +49,7 @@ const DataTablePopoverBP = (props) => {
 
   const { globalData, setGlobalData } = useContext(DataContext) // The global data object
   const [selectedType, setSelectedType] = useState(getTypeInGlobalData()) // The selected data type
+  const [tags, setTags] = useState([]) // The tags for the string data type
   const menuItemOptions = { shouldDismissPopover: false, onClick: (e) => handleDataTypeChange(e), roleStructure: "listoption" } // The options for the menu items
   /**
    * To handle the change in the data type
@@ -159,12 +162,47 @@ const DataTablePopoverBP = (props) => {
 
   useEffect(() => {
     setSelectedType(getTypeInGlobalData())
+    let globalDataCopy = { ...globalData }
+    let tags = globalDataCopy[props.config.uuid].getColumnsTag()
+    console.log("tags", tags, globalDataCopy[props.config.uuid])
+    let tagsDict = tags.tagsDict
+    let columnsTag = tags.columnsTag
+    console.log("columnsTag", columnsTag[props.columnName])
+    let columnTag = columnsTag[props.columnName]
+    let columnTagToSet = {}
+
+    if (columnTag) {
+      columnTag.forEach((tag) => {
+        if (tagsDict) {
+          if (tagsDict[tag]) {
+            columnTagToSet[tag] = tagsDict[tag]
+          } else {
+            columnTagToSet[tag] = { color: generateRandomColor(tag), fontColor: "white" }
+          }
+        } else {
+          columnTagToSet[tag] = { color: generateRandomColor(tag), fontColor: "white" }
+        }
+      })
+    }
+    setTags(columnTagToSet)
   }, [props])
+
+  useEffect(() => {
+    console.log("tags changed", tags)
+  }, [tags])
 
   return (
     <>
       <Stack direction="vertical" gap={1}>
-        <div></div>
+        <Stack direction="horizontal" gap={1} style={{ overflow: "clip" }}>
+          {tags &&
+            Object.keys(tags).map((tag, index) => {
+              let color = tags[tag].color
+              let fontColor = tags[tag].fontColor
+              let style = { backgroundColor: color, color: fontColor }
+              return <Chip className="custom-token custom-bp-table" key={"chip" + index} label={tag} style={style} />
+            })}
+        </Stack>
         <Stack direction="horizontal" gap={1} style={{ marginInline: "5px", paddingBottom: "3px" }}>
           <Popover
             content={

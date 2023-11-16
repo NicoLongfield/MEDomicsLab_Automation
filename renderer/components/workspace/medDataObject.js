@@ -1044,8 +1044,8 @@ export default class MedDataObject {
    * Returns the columns' tags of the `MedDataObject` instance and the tags dictionary (if any).
    * @returns {Object, Object} - The columns' tags of the `MedDataObject` instance and the tags dictionary (if any).
    */
-  getColumnsTags() {
-    return { columnsTags: this.metadata.columnsTags, tagsDict: this.metadata.tagsDict }
+  getColumnsTag() {
+    return { columnsTag: this.metadata.columnsTag, tagsDict: this.metadata.tagsDict }
   }
 
   /**
