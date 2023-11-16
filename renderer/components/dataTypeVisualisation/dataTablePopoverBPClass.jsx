@@ -163,104 +163,107 @@ const DataTablePopoverBP = (props) => {
 
   return (
     <>
-      <Stack direction="horizontal" gap={1} style={{ marginInline: "5px", paddingBottom: "3px" }}>
-        <Popover
-          content={
-            <Menu>
-              <MenuItem icon="array-floating-point" text="Numerical" {...menuItemOptions} selected={selectedType == "Numerical"} />
-              <MenuItem icon="array-numeric" text="Categorical" {...menuItemOptions} selected={selectedType == "Categorical"} />
-              <MenuItem icon="array-timestamp" text="Time" {...menuItemOptions} selected={selectedType == "Time"} />
-              <MenuItem icon="array-string" text="String" {...menuItemOptions} selected={selectedType == "String"} />
-            </Menu>
-          }
-          placement="bottom-end"
-        >
-          <Button active={false} icon={selectedIcon[selectedType]} style={{ padding: "0.25rem", boxSizing: "content-box", minWidth: "1rem", minHeight: "1rem" }} />
-        </Popover>
-        {selectedType == "Categorical" && ( // If the data type is categorical, then show the select component
-          <>
-            <Select
-              items={getUniqueValues()}
-              itemRenderer={(item, { handleClick, modifiers }) => {
-                return <MenuItem selected={item === props.filterValue(props.index).filterValue} active={modifiers.active} disabled={modifiers.disabled} key={item} onClick={handleClick} text={item} roleStructure="listoption" />
-              }}
-              onItemSelect={(item, dict) => {
-                console.log("Item selected", item, props.index, dict)
-                if (props.filterValue(props.index).filterValue !== undefined && props.filterValue(props.index).filterValue !== null) {
-                  if (props.filterValue(props.index).filterValue == item) {
-                    props.filterColumn(props.index, "")
+      <Stack direction="vertical" gap={1}>
+        <div></div>
+        <Stack direction="horizontal" gap={1} style={{ marginInline: "5px", paddingBottom: "3px" }}>
+          <Popover
+            content={
+              <Menu>
+                <MenuItem icon="array-floating-point" text="Numerical" {...menuItemOptions} selected={selectedType == "Numerical"} />
+                <MenuItem icon="array-numeric" text="Categorical" {...menuItemOptions} selected={selectedType == "Categorical"} />
+                <MenuItem icon="array-timestamp" text="Time" {...menuItemOptions} selected={selectedType == "Time"} />
+                <MenuItem icon="array-string" text="String" {...menuItemOptions} selected={selectedType == "String"} />
+              </Menu>
+            }
+            placement="bottom-end"
+          >
+            <Button active={false} icon={selectedIcon[selectedType]} style={{ padding: "0.25rem", boxSizing: "content-box", minWidth: "1rem", minHeight: "1rem" }} />
+          </Popover>
+          {selectedType == "Categorical" && ( // If the data type is categorical, then show the select component
+            <>
+              <Select
+                items={getUniqueValues()}
+                itemRenderer={(item, { handleClick, modifiers }) => {
+                  return <MenuItem selected={item === props.filterValue(props.index).filterValue} active={modifiers.active} disabled={modifiers.disabled} key={item} onClick={handleClick} text={item} roleStructure="listoption" />
+                }}
+                onItemSelect={(item, dict) => {
+                  console.log("Item selected", item, props.index, dict)
+                  if (props.filterValue(props.index).filterValue !== undefined && props.filterValue(props.index).filterValue !== null) {
+                    if (props.filterValue(props.index).filterValue == item) {
+                      props.filterColumn(props.index, "")
+                    } else {
+                      props.filterColumn(props.index, item)
+                    }
                   } else {
                     props.filterColumn(props.index, item)
                   }
-                } else {
-                  props.filterColumn(props.index, item)
-                }
-              }}
-              popoverProps={{
-                usePortal: true
-              }}
-              inputProps={{ value: props.filterValue(props.index).filterValue }}
-              popoverContentProps={{
-                style: { maxHeight: "200px", width: "100%", height: "200px", overflow: "auto" }
-              }}
-              filterable={false}
-            >
-              <Button rightIcon="caret-down" placeholder="Select value" text={props.filterValue(props.index).filterValue !== "" && props.filterValue(props.index).filterValue ? props.filterValue(props.index).filterValue : "Select value"} style={{ width: "auto", height: "1.5rem" }} small={true} />
-            </Select>
-          </>
-        )}{" "}
-        {selectedType == "Numerical" && ( // If the data type is numerical, then show this input component
-          <>
-            <InputGroup
-              asyncControl={true}
-              disabled={false}
-              large={false}
-              placeholder={props.columnName + " " + props.index}
-              readOnly={false}
-              small={true}
-              style={{ width: "100%" }}
-              value={props.filterValue(props.index).filterValue || ""}
-              onValueChange={(value) => {
-                props.filterColumn(props.index, value)
-              }}
-            />
-          </>
-        )}
-        {selectedType == "String" && ( // If the data type is string, then show this input component
-          <>
-            <InputGroup
-              asyncControl={true}
-              disabled={false}
-              large={false}
-              placeholder={props.columnName + " " + props.index}
-              readOnly={false}
-              small={true}
-              style={{ width: "100%" }}
-              rightElement={<Tag style={{ marginInline: "5px" }} />}
-              value={props.filterValue(props.index).filterValue || ""}
-              onChange={(e) => {
-                props.filterColumn(props.index, e.target.value)
-              }}
-            />
-          </>
-        )}
-        {selectedType == "Time" && ( // If the data type is time, then show this input component
-          <>
-            <InputGroup
-              asyncControl={true}
-              disabled={false}
-              large={false}
-              placeholder={props.columnName + " " + props.index}
-              readOnly={false}
-              small={true}
-              style={{ width: "100%" }}
-              value={deepCopy(props.filterValue(props.index).filterValue) || ""}
-              onValueChange={(value) => {
-                props.filterColumn(props.index, value)
-              }}
-            />
-          </>
-        )}
+                }}
+                popoverProps={{
+                  usePortal: true
+                }}
+                inputProps={{ value: props.filterValue(props.index).filterValue }}
+                popoverContentProps={{
+                  style: { maxHeight: "200px", width: "100%", height: "200px", overflow: "auto" }
+                }}
+                filterable={false}
+              >
+                <Button rightIcon="caret-down" placeholder="Select value" text={props.filterValue(props.index).filterValue !== "" && props.filterValue(props.index).filterValue ? props.filterValue(props.index).filterValue : "Select value"} style={{ width: "auto", height: "1.5rem" }} small={true} />
+              </Select>
+            </>
+          )}{" "}
+          {selectedType == "Numerical" && ( // If the data type is numerical, then show this input component
+            <>
+              <InputGroup
+                asyncControl={true}
+                disabled={false}
+                large={false}
+                placeholder={props.columnName + " " + props.index}
+                readOnly={false}
+                small={true}
+                style={{ width: "100%" }}
+                value={props.filterValue(props.index).filterValue || ""}
+                onValueChange={(value) => {
+                  props.filterColumn(props.index, value)
+                }}
+              />
+            </>
+          )}
+          {selectedType == "String" && ( // If the data type is string, then show this input component
+            <>
+              <InputGroup
+                asyncControl={true}
+                disabled={false}
+                large={false}
+                placeholder={props.columnName + " " + props.index}
+                readOnly={false}
+                small={true}
+                style={{ width: "100%" }}
+                rightElement={<Tag style={{ marginInline: "5px" }} />}
+                value={props.filterValue(props.index).filterValue || ""}
+                onChange={(e) => {
+                  props.filterColumn(props.index, e.target.value)
+                }}
+              />
+            </>
+          )}
+          {selectedType == "Time" && ( // If the data type is time, then show this input component
+            <>
+              <InputGroup
+                asyncControl={true}
+                disabled={false}
+                large={false}
+                placeholder={props.columnName + " " + props.index}
+                readOnly={false}
+                small={true}
+                style={{ width: "100%" }}
+                value={deepCopy(props.filterValue(props.index).filterValue) || ""}
+                onValueChange={(value) => {
+                  props.filterColumn(props.index, value)
+                }}
+              />
+            </>
+          )}
+        </Stack>
       </Stack>
     </>
   )
