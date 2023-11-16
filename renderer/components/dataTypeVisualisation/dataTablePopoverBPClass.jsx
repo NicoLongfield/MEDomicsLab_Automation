@@ -193,13 +193,13 @@ const DataTablePopoverBP = (props) => {
 
   return (
     <>
-      <Stack direction="vertical" gap={1}>
-        <Stack direction="horizontal" gap={1} style={{ overflow: "clip" }}>
+      <Stack direction="vertical" gap={1} style={{ cursor: "default" }}>
+        <Stack className="datatable-tags" direction="horizontal" gap={0} style={{ overflowX: "auto", padding: "0rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {tags &&
             Object.keys(tags).map((tag, index) => {
               let color = tags[tag].color
               let fontColor = tags[tag].fontColor
-              let style = { backgroundColor: color, color: fontColor }
+              let style = { backgroundColor: color, color: fontColor, cursor: "default" }
               return <Chip className="custom-token custom-bp-table" key={"chip" + index} label={tag} style={style} />
             })}
         </Stack>
