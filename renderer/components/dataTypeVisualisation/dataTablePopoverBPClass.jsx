@@ -194,15 +194,19 @@ const DataTablePopoverBP = (props) => {
   return (
     <>
       <Stack direction="vertical" gap={1} style={{ cursor: "default" }}>
-        <Stack className="datatable-tags" direction="horizontal" gap={0} style={{ overflowX: "auto", padding: "0rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="datatable-tags" direction="horizontal" style={{ overflowX: "auto", padding: "0rem", border: "1px solid transparent", display: "flex", width: "100%", whiteSpace: "nowrap", textAlign: "center" }}>
           {tags &&
             Object.keys(tags).map((tag, index) => {
               let color = tags[tag].color
               let fontColor = tags[tag].fontColor
-              let style = { backgroundColor: color, color: fontColor, cursor: "default" }
-              return <Chip className="custom-token custom-bp-table" key={"chip" + index} label={tag} style={style} />
+              let style = { backgroundColor: color, color: fontColor, cursor: "default", marginRight: "5px", textAlign: "center", display: "inline-flex", alignItems: "strech", justifyContent: "center" }
+              return (
+                <div key={"div_chip" + index} style={{ minWidth: "fit-content", width: "100%", display: "inline-flex", flexGrow: "1", alignSelf: "center", justifyContent: "center", alignContent: "center", alignItems: "center" }}>
+                  <Chip className="custom-token custom-bp-table" key={"chip" + index} label={tag} style={style} />
+                </div>
+              )
             })}
-        </Stack>
+        </div>
         <Stack direction="horizontal" gap={1} style={{ marginInline: "5px", paddingBottom: "3px" }}>
           <Popover
             content={

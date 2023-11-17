@@ -461,7 +461,7 @@
 }
 
 .custom-token.custom-bp-table .p-chip-text {
-  padding: 0.0rem 0rem !important;
+  padding: 0rem 0rem !important;
   margin: 0rem !important;
   font-size: 0.75rem;
   font-weight: 500;
@@ -523,7 +523,7 @@
 /* styling the scrollbar */
 .datatable-tags::-webkit-scrollbar {
   background-color: #00000000;
-  height: 0.5rem ;
+  height: 0.5rem;
 }
 
 .datatable-tags::-webkit-scrollbar-track {
