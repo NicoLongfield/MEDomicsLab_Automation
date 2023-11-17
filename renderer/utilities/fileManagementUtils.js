@@ -294,11 +294,6 @@ const loadCSVFromPath = (path, whenLoaded) => {
         }
       })
       let columns = array.shift()
-      // let columns = []
-      // let originalColumns = array.shift()
-      // originalColumns.forEach((column) => {
-      //   columns.push(column.split("_|_").pop())
-      // })
       let df = new dfd.DataFrame(array, { columns: columns })
       df.drop(removeEmptyRows(df, 5))
       let dfJSON = dfd.toJSON(df)
