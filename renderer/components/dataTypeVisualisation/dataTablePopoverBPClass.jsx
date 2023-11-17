@@ -164,27 +164,26 @@ const DataTablePopoverBP = (props) => {
     setSelectedType(getTypeInGlobalData())
     let globalDataCopy = { ...globalData }
     let tags = globalDataCopy[props.config.uuid].getColumnsTag()
-    console.log("tags", tags, globalDataCopy[props.config.uuid])
-    let tagsDict = tags.tagsDict
-    let columnsTag = tags.columnsTag
-    console.log("columnsTag", columnsTag[props.columnName])
-    let columnTag = columnsTag[props.columnName]
-    let columnTagToSet = {}
-
-    if (columnTag) {
-      columnTag.forEach((tag) => {
-        if (tagsDict) {
-          if (tagsDict[tag]) {
-            columnTagToSet[tag] = tagsDict[tag]
+    if (tags) {
+      let tagsDict = tags.tagsDict
+      let columnsTag = tags.columnsTag
+      let columnTag = columnsTag[props.columnName]
+      let columnTagToSet = {}
+      if (columnTag) {
+        columnTag.forEach((tag) => {
+          if (tagsDict) {
+            if (tagsDict[tag]) {
+              columnTagToSet[tag] = tagsDict[tag]
+            } else {
+              columnTagToSet[tag] = { color: generateRandomColor(tag), fontColor: "white" }
+            }
           } else {
             columnTagToSet[tag] = { color: generateRandomColor(tag), fontColor: "white" }
           }
-        } else {
-          columnTagToSet[tag] = { color: generateRandomColor(tag), fontColor: "white" }
-        }
-      })
+        })
+      }
+      setTags(columnTagToSet)
     }
-    setTags(columnTagToSet)
   }, [props])
 
   useEffect(() => {
@@ -193,7 +192,7 @@ const DataTablePopoverBP = (props) => {
 
   return (
     <>
-      <Stack direction="vertical" gap={1} style={{ cursor: "default" }}>
+      <div direction="vertical" style={{ cursor: "default", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div className="datatable-tags" direction="horizontal" style={{ overflowX: "auto", padding: "0rem", border: "1px solid transparent", display: "flex", width: "100%", whiteSpace: "nowrap", textAlign: "center" }}>
           {tags &&
             Object.keys(tags).map((tag, index) => {
@@ -259,7 +258,7 @@ const DataTablePopoverBP = (props) => {
                 asyncControl={true}
                 disabled={false}
                 large={false}
-                placeholder={props.columnName + " " + props.index}
+                placeholder={"Filter " + props.columnName}
                 readOnly={false}
                 small={true}
                 style={{ width: "100%" }}
@@ -276,7 +275,7 @@ const DataTablePopoverBP = (props) => {
                 asyncControl={true}
                 disabled={false}
                 large={false}
-                placeholder={props.columnName + " " + props.index}
+                placeholder={"Filter " + props.columnName}
                 readOnly={false}
                 small={true}
                 style={{ width: "100%" }}
@@ -294,7 +293,7 @@ const DataTablePopoverBP = (props) => {
                 asyncControl={true}
                 disabled={false}
                 large={false}
-                placeholder={props.columnName + " " + props.index}
+                placeholder={"Filter " + props.columnName}
                 readOnly={false}
                 small={true}
                 style={{ width: "100%" }}
@@ -306,7 +305,7 @@ const DataTablePopoverBP = (props) => {
             </>
           )}
         </Stack>
-      </Stack>
+      </div>
     </>
   )
 }

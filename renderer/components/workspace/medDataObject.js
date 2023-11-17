@@ -3,6 +3,7 @@ import * as fs from "fs-extra"
 import { toast } from "react-toastify"
 import { ipcRenderer } from "electron"
 import process from "process"
+import { generateRandomColor } from "../input/taggingUtils"
 
 /**
  * Represents a data object in the workspace.
@@ -1045,6 +1046,12 @@ export default class MedDataObject {
    * @returns {Object, Object} - The columns' tags of the `MedDataObject` instance and the tags dictionary (if any).
    */
   getColumnsTag() {
+    if (this.metadata.columnsTag === undefined) {
+      this.metadata.columnsTag = {}
+    }
+    if (this.metadata.tagsDict === undefined) {
+      this.metadata.tagsDict = {}
+    }
     return { columnsTag: this.metadata.columnsTag, tagsDict: this.metadata.tagsDict }
   }
 
@@ -1154,10 +1161,10 @@ export default class MedDataObject {
       if (data.$columns) {
         newColumns = data.$columns
         this.metadata.columns = newColumns
-        return data.$columns
+        return this.automaticTaggingOfColumns(data.$columns)
       }
     }
-    return newColumns
+    return this.automaticTaggingOfColumns(newColumns)
   }
 
   /**
@@ -1172,7 +1179,7 @@ export default class MedDataObject {
       newColumns = data.$columns
       this.metadata.columns = newColumns
     }
-    return newColumns
+    return this.automaticTaggingOfColumns(newColumns)
   }
 
   /**
@@ -1212,14 +1219,78 @@ export default class MedDataObject {
     for (let column of columns) {
       let tags = column.split("_|_")
       if (tags.length > 1) {
+        if (this.metadata.columnsTag === undefined) {
+          this.metadata.columnsTag = {}
+        }
+        if (this.metadata.tagsDict === undefined) {
+          this.metadata.tagsDict = {}
+        }
         let columnName = tags.pop()
-        this.metadata.tags[columnName] = tags
+        this.metadata.columnsTag[columnName] = tags
+        for (let tag of tags) {
+          console.log("tag: ", tag, this.metadata.tagsDict[tag])
+          if (tag !== "") {
+            if (this.metadata.tagsDict[tag] === undefined || this.metadata.tagsDict[tag] === null) {
+              this.metadata.tagsDict[tag] = { color: generateRandomColor(), fontColor: "white" }
+            }
+          }
+        }
         newColumns.push(columnName)
       } else {
         newColumns.push(column)
       }
     }
+    this.metadata.columns = newColumns
+    this.renameColumnsWithoutTags()
     return newColumns
+  }
+
+  /**
+   * if this.data is a DanfoJS DataFrame, rename the columns without the tags
+   * @returns {void}
+   */
+  renameColumnsWithoutTags() {
+    if (this.data.$columns) {
+      let columnsRenaming = {}
+      this.data.$columns.forEach((column, index) => {
+        if (column.includes("_|_")) {
+          columnsRenaming[column] = this.metadata.columns[index]
+        }
+      })
+      this.data.rename(columnsRenaming, { inplace: true })
+    }
+  }
+
+  /**
+   * Export the tags into each column name
+   */
+  exportTagsToColumns() {
+    let newColumns = []
+    for (let column of this.columns) {
+      let tags = this.metadata.tags[column]
+      if (tags !== undefined) {
+        let newColumnName = tags.join("_|_") + "_|_" + column
+        newColumns.push(newColumnName)
+      } else {
+        newColumns.push(column)
+      }
+    }
+    this.metadata.columns = newColumns
+    return newColumns
+  }
+
+  /**
+   * Set the data of the `MedDataObject` instance and sets the metadata accordingly.
+   * @description - This function is called when the user loads a file into the workspace.
+   *  - The columns are extracted and the tags are added to the metadata.
+   */
+  setData(data) {
+    this.dataLoaded = true
+    this.lastModified = Date(Date.now())
+    if (data.$columns) {
+      this.data = data
+      this.metadata.columns = this.automaticTaggingOfColumns(data.$columns)
+    }
   }
 
   /**

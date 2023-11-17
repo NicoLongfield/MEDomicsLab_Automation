@@ -294,6 +294,11 @@ const loadCSVFromPath = (path, whenLoaded) => {
         }
       })
       let columns = array.shift()
+      // let columns = []
+      // let originalColumns = array.shift()
+      // originalColumns.forEach((column) => {
+      //   columns.push(column.split("_|_").pop())
+      // })
       let df = new dfd.DataFrame(array, { columns: columns })
       df.drop(removeEmptyRows(df, 5))
       let dfJSON = dfd.toJSON(df)
@@ -376,9 +381,14 @@ const loadJSONFromPath = (path, whenLoaded) => {
       let df = new dfd.DataFrame(result)
       df.drop(removeEmptyRows(df, 5))
       let dfJSON = dfd.toJSON(df)
-      console.log("DFJSON", dfJSON)
-      whenLoaded(dfJSON)
+      whenLoaded(df)
     }
+  })
+}
+
+const removeTagsFromColumns = (df) => {
+  columns.forEach((column) => {
+    newColumns.push(column.split("_|_").pop())
   })
 }
 
