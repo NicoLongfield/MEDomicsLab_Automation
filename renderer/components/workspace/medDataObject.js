@@ -1250,14 +1250,16 @@ export default class MedDataObject {
    * @returns {void}
    */
   renameColumnsWithoutTags() {
-    if (this.data.$columns) {
-      let columnsRenaming = {}
-      this.data.$columns.forEach((column, index) => {
-        if (column.includes("_|_")) {
-          columnsRenaming[column] = this.metadata.columns[index]
-        }
-      })
-      this.data.rename(columnsRenaming, { inplace: true })
+    if (this.data !== undefined && this.data !== null) {
+      if (this.data.$columns) {
+        let columnsRenaming = {}
+        this.data.$columns.forEach((column, index) => {
+          if (column.includes("_|_")) {
+            columnsRenaming[column] = this.metadata.columns[index]
+          }
+        })
+        this.data.rename(columnsRenaming, { inplace: true })
+      }
     }
   }
 

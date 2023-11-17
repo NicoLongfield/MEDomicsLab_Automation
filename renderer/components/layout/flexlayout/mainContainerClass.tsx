@@ -600,6 +600,8 @@ class MainInnerContainer extends React.Component<any, { layoutFile: string | nul
               sortable: true
             }}
             config={...config}
+            globalData={this.props.globalData}
+            setGlobalData={this.props.setGlobalData}
           />
         </>
       )

@@ -384,15 +384,23 @@ export class DataTableWrapperBPClass extends React.PureComponent<{}, {}> {
    * @param event - event
    * @param data - data to be exported
    */
-  public async exportToCSV(event: React.MouseEvent<HTMLButtonElement, MouseEvent>, data: any, filePath?: string) {
-    data = this.getModifiedData(data) // get the modified data
+  public async exportToCSV(event: React.MouseEvent<HTMLButtonElement, MouseEvent>, data: any, filePath?: string, df?: DataFrame) {
     let csvContentHeader = "data:text/csv;charset=utf-8,"
     let csvContent = ""
-    let headers = Object.keys(data[0])
+    let headers, firstRow
     // let firstRow = headers.join(",")
-    let firstRow = this.state.newColumnNames.join(",")
-    csvContent += firstRow + "\r\n"
     let length = data.length
+    if (!df) {
+      headers = Object.keys(data[0])
+      firstRow = this.state.newColumnNames.join(",")
+      csvContent += firstRow + "\r\n"
+    } else {
+      headers = df.$columns
+      firstRow = df.$columns.join(",")
+      csvContent += firstRow + "\r\n"
+      data = dfd.toJSON(df)
+    }
+    data = this.getModifiedData(data) // get the modified data
     data.forEach(function (rowArray: { [x: string]: string }, rowindex: number) {
       let rowToPush = ""
       headers.forEach((header, index) => {
@@ -590,6 +598,48 @@ export class DataTableWrapperBPClass extends React.PureComponent<{}, {}> {
       }
     })
     df.rename(columnsRenamingMap, { inplace: true })
+    // Rename the metadata
+    let globalDataCopy = { ...this.props.globalData }
+    let medObject = globalDataCopy[this.props.config.uuid]
+    Object.keys(columnsRenamingMap).forEach((key) => {
+      if (medObject.metadata.columns.includes(key)) {
+        medObject.metadata.columns[medObject.metadata.columns.indexOf(key)] = columnsRenamingMap[key]
+      }
+      if (medObject.metadata.columnsTag[key]) {
+        medObject.metadata.columnsTag[columnsRenamingMap[key]] = medObject.metadata.columnsTag[key]
+        delete medObject.metadata.columnsTag[key]
+      }
+      if (medObject.metadata.columnsInfo[key]) {
+        medObject.metadata.columnsInfo[columnsRenamingMap[key]] = medObject.metadata.columnsInfo[key]
+        delete medObject.metadata.columnsInfo[key]
+      }
+    })
+    console.log("globalDataCopy", globalDataCopy, this.props)
+    medObject.setData(df)
+    globalDataCopy[this.props.config.uuid] = medObject
+    this.props.setGlobalData(globalDataCopy)
+  }
+
+  private addTagsToData = (df: DataFrame) => {
+    let tags = this.props.globalData[this.props.config.uuid].getColumnsTag()
+    let tagsDict = tags.tagsDict
+    let columnsTag = tags.columnsTag
+    let columnsNames = df.$columns
+    let columnsNamesRenamingMap = {}
+    columnsNames.forEach((columnName, index) => {
+      let completeColumnName = columnName
+      if (columnsTag[columnName]) {
+        completeColumnName = columnsTag[columnName].join("_|_") + "_|_" + columnName
+      }
+      if (completeColumnName !== columnName) {
+        columnsNamesRenamingMap[columnName] = completeColumnName
+      }
+    })
+    let finalDf = df
+    if (Object.keys(columnsNamesRenamingMap).length > 0) {
+      finalDf = df.rename(columnsNamesRenamingMap, { inplace: false })
+    }
+    return finalDf
   }
 
   /**
@@ -602,9 +652,11 @@ export class DataTableWrapperBPClass extends React.PureComponent<{}, {}> {
     data = this.getModifiedData(data)
     let df = new dfd.DataFrame(data)
     this.saveColumnsNewNames(df)
+    let finalDf = this.addTagsToData(df)
+    let finalData = dfd.toJSON(finalDf)
     if (this.state.config.extension === "csv") {
       try {
-        await this.exportToCSV(event, data, this.state.config.path)
+        await this.exportToCSV(event, [], this.state.config.path, finalDf)
       } catch (e) {
         // No operation
       } finally {

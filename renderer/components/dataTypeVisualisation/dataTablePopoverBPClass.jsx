@@ -163,32 +163,30 @@ const DataTablePopoverBP = (props) => {
   useEffect(() => {
     setSelectedType(getTypeInGlobalData())
     let globalDataCopy = { ...globalData }
-    let tags = globalDataCopy[props.config.uuid].getColumnsTag()
-    if (tags) {
-      let tagsDict = tags.tagsDict
-      let columnsTag = tags.columnsTag
-      let columnTag = columnsTag[props.columnName]
-      let columnTagToSet = {}
-      if (columnTag) {
-        columnTag.forEach((tag) => {
-          if (tagsDict) {
-            if (tagsDict[tag]) {
-              columnTagToSet[tag] = tagsDict[tag]
+    if (globalDataCopy[props.config.uuid]) {
+      let tags = globalDataCopy[props.config.uuid].getColumnsTag()
+      if (tags) {
+        let tagsDict = tags.tagsDict
+        let columnsTag = tags.columnsTag
+        let columnTag = columnsTag[props.columnName]
+        let columnTagToSet = {}
+        if (columnTag) {
+          columnTag.forEach((tag) => {
+            if (tagsDict) {
+              if (tagsDict[tag]) {
+                columnTagToSet[tag] = tagsDict[tag]
+              } else {
+                columnTagToSet[tag] = { color: generateRandomColor(tag), fontColor: "white" }
+              }
             } else {
               columnTagToSet[tag] = { color: generateRandomColor(tag), fontColor: "white" }
             }
-          } else {
-            columnTagToSet[tag] = { color: generateRandomColor(tag), fontColor: "white" }
-          }
-        })
+          })
+        }
+        setTags(columnTagToSet)
       }
-      setTags(columnTagToSet)
     }
   }, [props])
-
-  useEffect(() => {
-    console.log("tags changed", tags)
-  }, [tags])
 
   return (
     <>
