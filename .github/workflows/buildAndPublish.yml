@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: windows-built
-          path: ./dist/
+          path: ./dist/MEDomicsLab-0.1.0-win.exe
   
   # build-macos:
   #   runs-on: macos-latest
@@ -80,19 +80,19 @@ jobs:
   #         name: linux-built
   #         path: ./dist/linux.zip
 
-  build-all: 
-    # needs: [build-windows, build-macos, build-ubuntu]
-    needs: build-windows
-    runs-on: ubuntu-latest
+  # build-all: 
+  #   # needs: [build-windows, build-macos, build-ubuntu]
+  #   needs: build-windows
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Download Windows
-        uses: actions/download-artifact@v3
-        with:
-          name: windows-built
-          path: ./windows_dist/
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #     - name: Download Windows
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: windows-built
+  #         path: ./MEDomicsLab-0.1.0-win.exe
       # - name: Download macOS
       #   uses: actions/download-artifact@v3
       #   with:
@@ -103,50 +103,42 @@ jobs:
       #   with:
       #     name: linux-built
       #     path: ./dist/linux.zip
-      - name: Unzip Windows
-        run: Expand-Archive -Path ./dist/windows.zip -DestinationPath ./dist/windows
+      # - name: Unzip Windows
+      #   run: Expand-Archive -Path ./dist/windows.zip -DestinationPath ./dist/windows
       # - name: Unzip macOS
       #   run: unzip ./dist/macos.zip -d ./dist/macos
       # - name: Unzip Linux
       #   run: unzip ./dist/linux.zip -d ./dist/linux
-      - name: Archive All
-        uses: actions/upload-artifact@v3
-        with:
-          name: all-built
-          path: ./dist
+      # - name: Archive All
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: all-built
+      #     path: ./
     
   publish:
-    needs: [build-all]
+    needs: build-windows
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-            node-version: 18.13
-            # cache: 'npm'
-            # cache-dependency-path: ./package-lock.json
-        
-      - name: Install dependencies
-        run: npm install
-
-      - name: Download All
+      - name: Download Windows
         uses: actions/download-artifact@v3
         with:
-          name: all-built
-          path: ./dist
-      - name: Unzip All
-        run: Expand-Archive -Path ./dist/all-built.zip -DestinationPath ./dist/all-built
+          name: windows-built
+          path: ./MEDomicsLab-0.1.0-win.exe
+   
+
+      # - name: Download All
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: all-built
+      #     path: ./dist
+      # - name: Unzip All
+      #   run: Expand-Archive -Path ./dist/all-built.zip -DestinationPath ./dist/all-built
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ./dist/all-built/windows/*
-            ./dist/all-built/macos/*
-            ./dist/all-built/linux/*
+            ./MEDomicsLab-0.1.0-win.exe
           tag_name: ${{ github.ref }}
           body: ${{ github.event.head_commit.message }}
           draft: false
