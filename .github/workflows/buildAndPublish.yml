@@ -26,11 +26,23 @@ jobs:
       - name: Build for Windows
         run: npm run build:win
 
-      - name: Archive Windows 
-        uses: actions/upload-artifact@v3
+      # - name: Archive Windows 
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: windows-built
+      #     path: ./dist/MEDomicsLab-0.1.0-win.exe
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
         with:
-          name: windows-built
-          path: ./dist/MEDomicsLab-0.1.0-win.exe
+          files: |
+              ./dist/MEDomicsLab-0.1.0-win.exe
+          tag_name: "v0.1.0"
+          body: "First release"
+          draft: false
+          prerelease: false
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   # build-macos:
   #   runs-on: macos-latest
@@ -115,16 +127,16 @@ jobs:
       #     name: all-built
       #     path: ./
     
-  publish:
-    needs: build-windows
-    runs-on: ubuntu-latest
+  # publish:
+  #   needs: build-windows
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Download Windows
-        uses: actions/download-artifact@v3
-        with:
-          name: windows-built
-          path: ./MEDomicsLab-0.1.0-win.exe
+  #   steps:
+  #     - name: Download Windows
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: windows-built
+  #         path: ./MEDomicsLab-0.1.0-win.exe
    
 
       # - name: Download All
@@ -134,17 +146,17 @@ jobs:
       #     path: ./dist
       # - name: Unzip All
       #   run: Expand-Archive -Path ./dist/all-built.zip -DestinationPath ./dist/all-built
-      - name: Publish
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            ./MEDomicsLab-0.1.0-win.exe
-          tag_name: ${{ github.ref }}
-          body: ${{ github.event.head_commit.message }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Publish
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: |
+      #       ./MEDomicsLab-0.1.0-win.exe
+      #     tag_name: ${{ github.ref }}
+      #     body: ${{ github.event.head_commit.message }}
+      #     draft: false
+      #     prerelease: false
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         
         
