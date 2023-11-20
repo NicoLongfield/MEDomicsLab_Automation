@@ -17,8 +17,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
             node-version: 18.13
-            cache: 'npm'
-            cache-dependency-path: ./package-lock.json
+            # cache: 'npm'
+            # cache-dependency-path: ./package-lock.json
         
       - name: Install dependencies
         run: npm install
@@ -126,8 +126,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
             node-version: 18.13
-            cache: 'npm'
-            cache-dependency-path: ./package-lock.json
+            # cache: 'npm'
+            # cache-dependency-path: ./package-lock.json
         
       - name: Install dependencies
         run: npm install
