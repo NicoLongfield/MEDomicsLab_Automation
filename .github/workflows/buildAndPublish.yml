@@ -22,10 +22,9 @@ jobs:
         
       - name: Install dependencies
         run: npm install
-
+    
       - name: Build for Windows
-        # run: npm run build:win
-        run: nextron build --win --x64
+        run: npm run build:win
       - name: Show files
         run: ls -la 
       - name: Archive Windows 

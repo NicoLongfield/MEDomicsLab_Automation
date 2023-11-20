@@ -47,17 +47,20 @@
       "maintainer": "gblain03@hotmail.com",
       "publish": "github"
     },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "MEDomics-UdeS",
-        "releaseType": "draft"
-      }
-    ]
+    "publish": null
+    // [
+      // {
+        // "provider": "github",
+        // "owner": "MEDomics-UdeS",
+        // "releaseType": "draft"
+      // }
+    // ]
   },
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",
+    "build:prod": "nextron build --config electron-builder.prod.yml",
+
     "build:linux": "bash ./utilScripts/build_preparation_linux.sh && nextron build --linux",
     "build:win": ".\\utilScripts\\build_preparation_win.bat && nextron build --win",
     "build:mac": "nextron build --mac",
