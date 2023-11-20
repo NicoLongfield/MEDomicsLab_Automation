@@ -144,12 +144,12 @@ jobs:
           uses: actions/download-artifact@v3
           with:
             name: windows-built
-            path: file1.txt
+            # path: file1.txt
         - name: Download Linux
           uses: actions/download-artifact@v3
           with:
             name: linux-built
-            path: file2.txt
+            # path: file2.txt
         - name: Display folder structure
           run: ls -R
 
@@ -157,9 +157,9 @@ jobs:
           uses: softprops/action-gh-release@v1
           with:
             files: |
-                file1.txt
-                file2.txt
-            tag_name: "v0.1.1"
+                ./file1.txt
+                ./file2.txt
+            tag_name: "v0.1.2"
             body: "First release"
             draft: false
             prerelease: false
