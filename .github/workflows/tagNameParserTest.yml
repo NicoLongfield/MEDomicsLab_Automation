@@ -1,0 +1,16 @@
+
+name: Parse tag name test
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  github-example-tags:
+    runs-on: ubuntu-latest
+    steps:
+    - name: GitHub Tag Name example
+      run: |
+        echo "Tag name from GITHUB_REF: $GITHUB_REF"
+        echo "Tag name from github.ref: ${{  github.ref }}"
+    
+        

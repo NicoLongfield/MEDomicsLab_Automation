@@ -25,23 +25,13 @@ jobs:
       - name: Build for Windows
         run: npm run build:win
 
-      # - name: Archive Windows 
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: windows-built
-      #     path: ./dist/MEDomicsLab-0.1.0-win.exe
-
-      - name: Publish
-        uses: softprops/action-gh-release@v1
+      - name: Archive Windows 
+        uses: actions/upload-artifact@v3
         with:
-          files: |
-              ./dist/MEDomicsLab-0.1.0-win.exe
-          tag_name: "v0.1.0"
-          body: "First release"
-          draft: false
-          prerelease: false
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: windows-built
+          path: ./dist/MEDomicsLab-0.1.0-win.exe
+
+
   
   # build-macos:
   #   runs-on: macos-latest
@@ -67,29 +57,29 @@ jobs:
     #       name: macos-built
     #       path: ./dist/macos.zip
   
-  # build-ubuntu:
-  #   runs-on: ubuntu-latest
+  build-ubuntu:
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #           node-version: 18.13
-  #           cache: 'npm'
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+            node-version: 18.13
         
-  #     - name: Install dependencies
-  #       run: npm install
+      - name: Install dependencies
+        run: npm install
 
-  #     - name: Build for Linux
-  #       run: npm run build:linux
-  #     - name: Archive Linux 
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: linux-built
-  #         path: ./dist/linux.zip
+      - name: Build for Linux
+        run: npm run build:linux
+
+      - name: Archive Linux 
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-built
+          path: ./dist/
 
   # build-all: 
   #   # needs: [build-windows, build-macos, build-ubuntu]
@@ -126,36 +116,31 @@ jobs:
       #     name: all-built
       #     path: ./
     
-  # publish:
-  #   needs: build-windows
-  #   runs-on: ubuntu-latest
+  publish:
+    needs: [build-windows]
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Download Windows
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: windows-built
-  #         path: ./MEDomicsLab-0.1.0-win.exe
+    steps:
+
+      - name: Download Windows
+        uses: actions/download-artifact@v3
+        with:
+          name: windows-built
    
 
-      # - name: Download All
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: all-built
-      #     path: ./dist
-      # - name: Unzip All
-      #   run: Expand-Archive -Path ./dist/all-built.zip -DestinationPath ./dist/all-built
-      # - name: Publish
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     files: |
-      #       ./MEDomicsLab-0.1.0-win.exe
-      #     tag_name: ${{ github.ref }}
-      #     body: ${{ github.event.head_commit.message }}
-      #     draft: false
-      #     prerelease: false
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+              ./dist/MEDomicsLab-0.1.0-win.exe
+          tag_name: "v0.1.4"
+          body: "First real release"
+          draft: false
+          prerelease: false
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         
         
