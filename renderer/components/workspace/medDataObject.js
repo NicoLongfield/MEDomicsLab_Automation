@@ -1226,7 +1226,17 @@ export default class MedDataObject {
           this.metadata.tagsDict = {}
         }
         let columnName = tags.pop()
-        this.metadata.columnsTag[columnName] = tags
+        if (this.metadata.columnsTag[columnName] === undefined) {
+          this.metadata.columnsTag[columnName] = tags
+        }
+        for (let tag of tags) {
+          if (tag !== "") {
+            if (!this.metadata.columnsTag[columnName].includes(tag)) {
+              this.metadata.columnsTag[columnName].push(tag)
+            }
+          }
+        }
+        // this.metadata.columnsTag[columnName] = tags
         for (let tag of tags) {
           console.log("tag: ", tag, this.metadata.tagsDict[tag])
           if (tag !== "") {

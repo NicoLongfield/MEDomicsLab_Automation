@@ -601,21 +601,24 @@ export class DataTableWrapperBPClass extends React.PureComponent<{}, {}> {
     // Rename the metadata
     let globalDataCopy = { ...this.props.globalData }
     let medObject = globalDataCopy[this.props.config.uuid]
+    medObject.setData(df)
     Object.keys(columnsRenamingMap).forEach((key) => {
       if (medObject.metadata.columns.includes(key)) {
         medObject.metadata.columns[medObject.metadata.columns.indexOf(key)] = columnsRenamingMap[key]
+        console.log("COLUMN TAG")
       }
       if (medObject.metadata.columnsTag[key]) {
+        console.log("COLUMN TAG")
         medObject.metadata.columnsTag[columnsRenamingMap[key]] = medObject.metadata.columnsTag[key]
         delete medObject.metadata.columnsTag[key]
       }
       if (medObject.metadata.columnsInfo[key]) {
+        console.log("COLUMN TAG")
         medObject.metadata.columnsInfo[columnsRenamingMap[key]] = medObject.metadata.columnsInfo[key]
         delete medObject.metadata.columnsInfo[key]
       }
     })
     console.log("globalDataCopy", globalDataCopy, this.props)
-    medObject.setData(df)
     globalDataCopy[this.props.config.uuid] = medObject
     this.props.setGlobalData(globalDataCopy)
   }
