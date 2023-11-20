@@ -25,12 +25,12 @@ jobs:
     
       - name: Build for Windows
         run: npm run build:win
-        
+
       - name: Archive Windows 
         uses: actions/upload-artifact@v3
         with:
           name: windows-built
-          path: ./dist/windows.zip
+          path: ./dist/
   
   # build-macos:
   #   runs-on: macos-latest
@@ -92,7 +92,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: windows-built
-          path: ./dist/windows.zip
+          path: ./windows_dist/
       # - name: Download macOS
       #   uses: actions/download-artifact@v3
       #   with:
