@@ -1,0 +1,155 @@
+
+name: Build and Publish Release
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+            node-version: 18.13
+            cache: 'npm'
+        
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build for Windows
+        run: npm run build:win
+      - name: Archive Windows 
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-built
+          path: ./dist/windows.zip
+  
+  # build-macos:
+  #   runs-on: macos-latest
+
+    # steps:
+    #   - name: Checkout code
+    #     uses: actions/checkout@v4
+
+    #   - name: Set up Node.js
+    #     uses: actions/setup-node@v3
+    #     with:
+    #         node-version: 18.13
+    #         cache: 'npm'
+        
+    #   - name: Install dependencies
+    #     run: npm install
+
+    #   - name: Build for macOS
+    #     run: npm run build:macos
+    #   - name: Archive macOS 
+    #     uses: actions/upload-artifact@v3
+    #     with:
+    #       name: macos-built
+    #       path: ./dist/macos.zip
+  
+  # build-ubuntu:
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #           node-version: 18.13
+  #           cache: 'npm'
+        
+  #     - name: Install dependencies
+  #       run: npm install
+
+  #     - name: Build for Linux
+  #       run: npm run build:linux
+  #     - name: Archive Linux 
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: linux-built
+  #         path: ./dist/linux.zip
+
+  build-all: 
+    # needs: [build-windows, build-macos, build-ubuntu]
+    needs: build-windows
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download Windows
+        uses: actions/download-artifact@v3
+        with:
+          name: windows-built
+          path: ./dist/windows.zip
+      # - name: Download macOS
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: macos-built
+      #     path: ./dist/macos.zip
+      # - name: Download Linux
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: linux-built
+      #     path: ./dist/linux.zip
+      - name: Unzip Windows
+        run: Expand-Archive -Path ./dist/windows.zip -DestinationPath ./dist/windows
+      # - name: Unzip macOS
+      #   run: unzip ./dist/macos.zip -d ./dist/macos
+      # - name: Unzip Linux
+      #   run: unzip ./dist/linux.zip -d ./dist/linux
+      - name: Archive All
+        uses: actions/upload-artifact@v3
+        with:
+          name: all-built
+          path: ./dist
+    
+  publish:
+    needs: [build-all]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+            node-version: 18.13
+        
+      - name: Install dependencies
+        run: npm install
+
+      - name: Download All
+        uses: actions/download-artifact@v3
+        with:
+          name: all-built
+          path: ./dist
+      - name: Unzip All
+        run: Expand-Archive -Path ./dist/all-built.zip -DestinationPath ./dist/all-built
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./dist/all-built/windows/*
+            ./dist/all-built/macos/*
+            ./dist/all-built/linux/*
+          tag_name: ${{ github.ref }}
+          body: ${{ github.event.head_commit.message }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        
+        
+
