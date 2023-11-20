@@ -25,8 +25,7 @@ jobs:
     
       - name: Build for Windows
         run: npm run build:win
-      - name: Show files
-        run: ls -la 
+        
       - name: Archive Windows 
         uses: actions/upload-artifact@v3
         with:
