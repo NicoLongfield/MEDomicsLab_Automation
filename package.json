@@ -48,13 +48,6 @@
       "publish": "github"
     },
     "publish": null
-    // [
-      // {
-        // "provider": "github",
-        // "owner": "MEDomics-UdeS",
-        // "releaseType": "draft"
-      // }
-    // ]
   },
   "scripts": {
     "dev": "nextron",
