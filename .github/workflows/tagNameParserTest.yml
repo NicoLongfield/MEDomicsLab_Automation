@@ -113,19 +113,14 @@ jobs:
         run: uname -m
       
       - name: Check if Python2.7 is installed
-        run: python2 --version
-        if: ${{ success() }}
-        continue-on-error: true
-      
-      - name: Install Python2.7 for tfjs-node dependencies
         run: |
-          curl -O https://www.python.org/ftp/python/2.7.18/python-2.7.18-macosx10.9.pkg
-          sudo installer -pkg python-2.7.18-macosx10.9.pkg -target /
-        if: ${{ failure() }}
-
-      - name: Install Python2.7 for tfjs-node dependencies
-        run: brew install python@2
-
+          if ! which python2.7 > /dev/null; then
+            curl -O https://www.python.org/ftp/python/2.7.18/python-2.7.18-macosx10.9.pkg
+            sudo installer -pkg python-2.7.18-macosx10.9.pkg -target /
+          else
+            echo "Python 2.7 is already installed"
+          fi
+      
       - name: Install tfjs-node dependencies
         run: npm install @tensorflow/tfjs-node
         
