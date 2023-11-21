@@ -43,8 +43,10 @@
     "nsis": {},
     "linux": {
       "target": "deb",
-      "icon": "app/assets/icon.png"
+      "icon": "app/assets/icon.png",
+      "maintainer": "gblain03@hotmail.com"
     },
+    
     "publish": null
   },
   "scripts": {
