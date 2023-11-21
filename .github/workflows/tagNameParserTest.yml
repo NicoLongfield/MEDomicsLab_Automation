@@ -143,7 +143,7 @@ jobs:
      
 
   publish:
-    needs: [build-windows, build-linux]
+    needs: [build-windows, build-linux, build-mac]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -164,9 +164,25 @@ jobs:
         with:
           name: mac-built
 
+      - name: Install zip
+        run: sudo apt-get install zip
+
       - name: Get folder structure
         run: |
           ls -R
+      
+      - name: Move files out of pythonEnv - to root
+        run: |
+          mv ./pythonEnv/requirements.txt ./requirements.txt
+          mv ./pythonEnv/create_conda_env_win.bat ./create_conda_env_win.bat
+          mv ./pythonEnv/create_venv_linux.sh ./create_venv_linux.sh
+          ls -R
+
+      - name: zip Windows
+        run: zip -r MEDomicsLab-PythonEnv-win.zip ./requirements.txt ./create_conda_env_win.bat
+
+      - name: zip Linux
+        run: zip -r MEDomicsLab-PythonEnv-linux.zip ./requirements.txt ./create_venv_linux.sh
       
       - name: Get tag name
         id: get-tag
@@ -181,6 +197,8 @@ jobs:
             ./MEDomicsLab-${{ env.VERSION }}-win.exe
             ./MEDomicsLab-${{ env.VERSION }}-linux.deb
             ./MEDomicsLab-${{ env.VERSION }}-mac.dmg
+            ./MEDomicsLab-PythonEnv-win.zip
+            ./MEDomicsLab-PythonEnv-linux.zip
           tag_name: full-${{ github.ref }}
           name: MEDomicsLab-${{ env.VERSION }}-full
           body: |
