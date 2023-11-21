@@ -40,13 +40,14 @@ jobs:
             node-version: 18.13
 
       - name: Get tag name
+        shell: bash
         run: |
           VERSION=${GITHUB_REF/refs\/tags\//}
           NEW_VERSION="v${VERSION}"
           node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
-
+  
       - name: Print package.json
-        run: cat package.json
+        run: Get-Content package.json
 
 
   
