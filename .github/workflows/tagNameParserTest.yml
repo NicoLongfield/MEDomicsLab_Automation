@@ -5,7 +5,6 @@ on:
     tags:
       - '*'
 jobs:
-  # ${GITHUB_REF/refs\/tags\//}
   build-windows:
     runs-on: windows-latest
 
