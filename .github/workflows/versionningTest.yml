@@ -17,18 +17,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
             node-version: 18.13
-                  
-      - name: Install dependencies
-        run: npm install
 
       - name: Get tag name
-        run: echo ::set-env name=TAG_NAME::${GITHUB_REF/refs\/tags\//}
-      
-
-      - name: Overwrite version in package.json
         run: |
-          sed -i "s/\"version\": \".*\"/\"version\": \"${GITHUB_REF/refs\/tags\//}\"/g" package.json
-          cat package.json
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          NEW_VERSION="v${VERSION}"
+          node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
 
       - name: Print package.json
         run: cat package.json
