@@ -3,7 +3,7 @@ name: Full build and publish with versioning
 on:
   push:
     tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - '*' # Push events to matching v*, i.e. v1.0, v20.15.10
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -109,6 +109,12 @@ jobs:
         with:
             node-version: 18.13
                   
+      - name: Install node-gyp
+        run: npm install -g node-gyp
+    
+      - name: Install tfjs-node dependencies
+        run: npm install @tensorflow/tfjs-node@3.8.0
+        
       - name: Install dependencies
         run: npm install
 
@@ -137,7 +143,7 @@ jobs:
      
 
   publish:
-    needs: [build-windows, build-linux, build-mac]
+    needs: [build-windows, build-linux]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -153,10 +159,10 @@ jobs:
         with:
           name: linux-built
       
-      - name: Download Mac
-        uses: actions/download-artifact@v3
-        with:
-          name: mac-built
+      # - name: Download Mac
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: mac-built
 
       - name: Get folder structure
         run: |
@@ -174,9 +180,8 @@ jobs:
           files: |
             ./MEDomicsLab-${{ env.VERSION }}-win.exe
             ./MEDomicsLab-${{ env.VERSION }}-linux.deb
-            ./MEDomicsLab-${{ env.VERSION }}-mac.dmg
           tag_name: ${{ github.ref }}
-          name: MEDomicsLab-${GITHUB_REF/refs\/tags\//}
+          name: MEDomicsLab-${{ env.VERSION }}
           body: |
             ${{ github.ref }}
           draft: false
