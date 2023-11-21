@@ -1,5 +1,5 @@
 
-name: Parse tag name test
+name: Full build and publish with versioning
 on:
   push:
     tags:
@@ -36,13 +36,22 @@ jobs:
         
       - name: Print folder structure
         run: ls -R
+
+      - name: Get tag name
+        id: get-tag
+        shell: bash
+        run: |
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          echo "::set-output name=VERSION::$VERSION"
         
       - name: Archive Windows 
         uses: actions/upload-artifact@v3
         with:
           name: windows-built
-          path: ./dist/MEDomicsLab-${GITHUB_REF/refs\/tags\//}-win.exe
-        
+          path: ./dist/MEDomicsLab-${{ env.VERSION }}-win.exe
+        env:
+          VERSION: ${{ steps.get-tag.outputs.VERSION }}
+
   build-linux:
     runs-on: ubuntu-latest
 
@@ -72,12 +81,21 @@ jobs:
 
       - name: Print folder structure
         run: ls -R
+
+      - name: Get tag name
+        id: get-tag
+        run: |
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          echo "::set-output name=VERSION::$VERSION"
+        
         
       - name: Archive Linux
         uses: actions/upload-artifact@v3
         with:
           name: linux-built
-          path: ./dist/MEDomicsLab-${GITHUB_REF/refs\/tags\//}-linux.deb
+          path: ./dist/MEDomicsLab-${{ env.VERSION }}-linux.deb
+        env:
+          VERSION: ${{ steps.get-tag.outputs.VERSION }}
 
   build-mac:
     runs-on: macos-latest
@@ -94,24 +112,29 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Get tag name
-        shell: bash
+      - name: Update version
         run: |
-          VERSION=${GITHUB_REF/refs\/tags\//}
-          NEW_VERSION="${VERSION}"
-          node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
-  
-      - name: Print package.json
-        run: cat package.json
+          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          echo "Version updated to ${GITHUB_REF/refs\/tags\//}"
 
       - name: Build for Mac
         run: npm run build:mac
+      
+      - name: Get tag name
+        id: get-tag
+        run: |
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          echo "::set-output name=VERSION::$VERSION"
+        
 
       - name: Archive Mac
         uses: actions/upload-artifact@v3
         with:
           name: mac-built
-          path: ./dist/MEDomicsLab-${GITHUB_REF/refs\/tags\//}-mac.dmg
+          path: ./dist/MEDomicsLab-${{ env.VERSION }}-mac.dmg
+        env:
+          VERSION: ${{ steps.get-tag.outputs.VERSION }}
+     
 
   publish:
     needs: [build-windows, build-linux, build-mac]
@@ -138,14 +161,20 @@ jobs:
       - name: Get folder structure
         run: |
           ls -R
+      
+      - name: Get tag name
+        id: get-tag
+        run: |
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          echo "::set-output name=VERSION::$VERSION"
           
       - name: Publish to GitHub
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ./MEDomicsLab-${GITHUB_REF/refs\/tags\//}-win.exe
-            ./MEDomicsLab-${GITHUB_REF/refs\/tags\//}-linux.deb
-            ./MEDomicsLab-${GITHUB_REF/refs\/tags\//}-mac.dmg
+            ./MEDomicsLab-${{ env.VERSION }}-win.exe
+            ./MEDomicsLab-${{ env.VERSION }}-linux.deb
+            ./MEDomicsLab-${{ env.VERSION }}-mac.dmg
           tag_name: ${{ github.ref }}
           name: MEDomicsLab-${GITHUB_REF/refs\/tags\//}
           body: |
@@ -153,3 +182,5 @@ jobs:
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          VERSION: ${{ steps.get-tag.outputs.VERSION }}

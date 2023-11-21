@@ -3,7 +3,7 @@ name: Parse tag name test
 on:
   push:
     tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'vz*' # Push events to matching v*, i.e. v1.0, v20.15.10
 jobs:
   
   build-linux:
@@ -35,7 +35,7 @@ jobs:
 
       - name: Print folder structure
         run: ls -R
-        
+
       - name: Archive Linux
         uses: actions/upload-artifact@v3
         with:
