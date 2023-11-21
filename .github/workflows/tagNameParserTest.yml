@@ -108,10 +108,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
             node-version: 18.13
+
+      - name: Mac OS X with M1 chip
+        run: uname -m
+      
+        
                   
-      - name: Install node-gyp
-        run: npm install -g node-gyp
-    
+      - name: Install Python2.7 for tfjs-node dependencies
+        run: brew install python@2
+
       - name: Install tfjs-node dependencies
         run: npm install @tensorflow/tfjs-node
         
