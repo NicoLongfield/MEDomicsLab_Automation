@@ -1,0 +1,41 @@
+
+name: Parse tag name test
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: 18.13
+                  
+      - name: Install dependencies
+        run: npm install
+
+      - name: Update version
+        run: |
+          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          echo "Version updated to ${GITHUB_REF/refs\/tags\//}"
+
+      - name: Print package.json
+        run: cat package.json
+
+      - name: Build for Linux
+        run: npm run build:linux
+
+      - name: Archive Linux
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-built
+          path: ./dist/MEDomicsLab-${GITHUB_REF/refs\/tags\//}-linux.deb
+
+  

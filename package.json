@@ -2,7 +2,7 @@
   "private": true,
   "name": "medapp",
   "description": "MEDomicsLab application",
-  "version": "$NEW_VERSION",
+  "version": "0.0.1",
   "author": "MEDomicsLab Team",
   "main": "app/background.js",
   "build": {
@@ -43,11 +43,8 @@
     "nsis": {},
     "linux": {
       "target": "deb",
-      "icon": "app/assets/icon.png",
-      "maintainer": "gblain03@hotmail.com",
-      "publish": "github"
+      "icon": "app/assets/icon.png"
     },
-    
     "publish": null
   },
   "scripts": {
