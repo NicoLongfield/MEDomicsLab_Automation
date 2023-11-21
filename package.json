@@ -2,7 +2,7 @@
   "private": true,
   "name": "medapp",
   "description": "MEDomicsLab application",
-  "version": "0.1.0",
+  "version": "$NEW_VERSION",
   "author": "MEDomicsLab Team",
   "main": "app/background.js",
   "build": {
@@ -32,8 +32,7 @@
     "mac": {
       "category": "public.app-category.developer-tools",
       "target": [
-        "dmg",
-        "zip"
+        "dmg"
       ],
       "icon": "app/assets/icon.icns"
     },
@@ -48,13 +47,13 @@
       "maintainer": "gblain03@hotmail.com",
       "publish": "github"
     },
+    
     "publish": null
   },
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",
     "build:prod": "nextron build --config electron-builder.prod.yml",
-
     "build:linux": "bash ./utilScripts/build_preparation_linux.sh && nextron build --linux",
     "build:win": ".\\utilScripts\\build_preparation_win.bat && nextron build --win",
     "build:mac": "nextron build --mac",

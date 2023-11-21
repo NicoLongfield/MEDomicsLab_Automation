@@ -5,12 +5,145 @@ on:
     tags:
       - '*'
 jobs:
-  github-example-tags:
+  # ${GITHUB_REF/refs\/tags\//}
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: 18.13
+            
+        
+      - name: Install dependencies
+        run: npm install
+    
+      - name: Update version
+        run: |
+          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          echo "Version updated to ${GITHUB_REF/refs\/tags\//}"
+
+
+      - name: Build for Windows
+        run: npm run build:win
+  
+      - name: Archive Windows 
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-built
+          path: ./dist/MEDomicsLab-${GITHUB_REF/refs\/tags\//}-win.exe
+        
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: 18.13
+                  
+      - name: Install dependencies
+        run: npm install
+
+      - name: Update version
+        run: |
+          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          echo "Version updated to ${GITHUB_REF/refs\/tags\//}"
+
+      - name: Build for Linux
+        run: npm run build:linux
+
+      - name: Archive Linux
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-built
+          path: ./dist/MEDomicsLab-${GITHUB_REF/refs\/tags\//}-linux.deb
+
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: 18.13
+                  
+      - name: Install dependencies
+        run: npm install
+
+      - name: Update version
+        run: |
+          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          echo "Version updated to ${GITHUB_REF/refs\/tags\//}"
+
+      - name: Build for Mac
+        run: npm run build:mac
+
+      - name: Archive Mac
+        uses: actions/upload-artifact@v3
+        with:
+          name: mac-built
+          path: ./dist/MEDomicsLab-${GITHUB_REF/refs\/tags\//}-mac.dmg
+
+  publish:
+    needs: [build-windows, build-linux, build-mac]
     runs-on: ubuntu-latest
     steps:
-    - name: GitHub Tag Name example
-      run: |
-        echo "Tag name from GITHUB_REF: $GITHUB_REF"
-        echo "Tag name from github.ref: ${{  github.ref }}"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Windows
+        uses: actions/download-artifact@v3
+        with:
+          name: windows-built
+      
+      - name: Download Linux
+        uses: actions/download-artifact@v3
+        with:
+          name: linux-built
+      
+      - name: Download Mac
+        uses: actions/download-artifact@v3
+        with:
+          name: mac-built
+
+      - name: Get folder structure
+        run: |
+          ls -R
+          
+      - name: Publish to GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./MEDomicsLab-${GITHUB_REF/refs\/tags\//}-win.exe
+            ./MEDomicsLab-${GITHUB_REF/refs\/tags\//}-linux.deb
+            ./MEDomicsLab-${GITHUB_REF/refs\/tags\//}-mac.dmg
+          tag_name: ${{ github.ref }}
+          name: "MEDomicsLab-${GITHUB_REF/refs\/tags\//}"
+          body: |
+            ${{ github.ref }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+
+
+
+
+  
+    
+
+
+
     
         

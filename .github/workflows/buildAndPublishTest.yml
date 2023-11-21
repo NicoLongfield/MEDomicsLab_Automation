@@ -28,41 +28,6 @@ jobs:
           name: windows-built
           path: ./file1.txt
 
-      # - name: Publish
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     files: |
-      #         ./dist/MEDomicsLab-0.1.0-win.exe
-      #     tag_name: "v0.1.0"
-      #     body: "First release"
-      #     draft: false
-      #     prerelease: false
-      #   env:
-      #       GITHUB_TOKEN:
-  
-  # build-macos:
-  #   runs-on: macos-latest
-
-    # steps:
-    #   - name: Checkout code
-    #     uses: actions/checkout@v4
-
-    #   - name: Set up Node.js
-    #     uses: actions/setup-node@v3
-    #     with:
-    #         node-version: 18.13
-    #         cache: 'npm'
-        
-    #   - name: Install dependencies
-    #     run: npm install
-
-    #   - name: Build for macOS
-    #     run: npm run build:macos
-    #   - name: Archive macOS 
-    #     uses: actions/upload-artifact@v3
-    #     with:
-    #       name: macos-built
-    #       path: ./dist/macos.zip
   
   build-ubuntu:
     runs-on: ubuntu-latest
