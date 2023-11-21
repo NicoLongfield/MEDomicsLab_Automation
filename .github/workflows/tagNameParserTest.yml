@@ -128,21 +128,9 @@ jobs:
             ./MEDomicsLab-${GITHUB_REF/refs\/tags\//}-linux.deb
             ./MEDomicsLab-${GITHUB_REF/refs\/tags\//}-mac.dmg
           tag_name: ${{ github.ref }}
-          name: "MEDomicsLab-${GITHUB_REF/refs\/tags\//}"
+          name: MEDomicsLab-${GITHUB_REF/refs\/tags\//}
           body: |
             ${{ github.ref }}
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
-          
-
-
-
-
-  
-    
-
-
-
-    
-        
