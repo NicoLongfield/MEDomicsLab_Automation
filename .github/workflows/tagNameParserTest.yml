@@ -141,6 +141,8 @@ jobs:
           VERSION=${GITHUB_REF/refs\/tags\//}
           echo "::set-output name=VERSION::$VERSION"
         
+      - name: Print folder structure
+        run: ls -R
 
       - name: Archive Mac
         uses: actions/upload-artifact@v3
@@ -149,7 +151,6 @@ jobs:
           path: ./dist/MEDomicsLab-${{ env.VERSION }}-mac.dmg
         env:
           VERSION: ${{ steps.get-tag.outputs.VERSION }}
-     
 
   publish:
       needs: [build-mac]
