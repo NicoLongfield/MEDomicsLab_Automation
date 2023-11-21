@@ -3,7 +3,7 @@ name: Upload Download and Publish Release Test
 on:
   push:
     branches:
-      - release_test
+      - release_test_
 
 jobs:
   build-windows:

@@ -3,7 +3,7 @@ name: Versioning
 on:
   push:
     tags:
-      - '*'
+      - 'z*'
 jobs:
   
   build-linux:
