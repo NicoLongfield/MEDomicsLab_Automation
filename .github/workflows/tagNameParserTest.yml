@@ -17,19 +17,26 @@ jobs:
         with:
             node-version: 18.13
             
+      - name: Get tag name
+        shell: bash
+        run: |
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          NEW_VERSION="${VERSION}"
+          node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
         
+      - name: Print package.json
+        run: Get-Content package.json
+            
       - name: Install dependencies
         run: npm install
-    
-      - name: Update version
-        run: |
-          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
-          echo "Version updated to ${GITHUB_REF/refs\/tags\//}"
-
+            
 
       - name: Build for Windows
         run: npm run build:win
-  
+        
+      - name: Print folder structure
+        run: ls -R
+        
       - name: Archive Windows 
         uses: actions/upload-artifact@v3
         with:
@@ -47,18 +54,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
             node-version: 18.13
-                  
+
+      - name: Get tag name
+        run: |
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          NEW_VERSION="${VERSION}"
+          node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+
+      - name: Print package.json
+        run: cat package.json
+
       - name: Install dependencies
         run: npm install
-
-      - name: Update version
-        run: |
-          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
-          echo "Version updated to ${GITHUB_REF/refs\/tags\//}"
 
       - name: Build for Linux
         run: npm run build:linux
 
+      - name: Print folder structure
+        run: ls -R
+        
       - name: Archive Linux
         uses: actions/upload-artifact@v3
         with:
@@ -80,10 +94,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Update version
+      - name: Get tag name
+        shell: bash
         run: |
-          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
-          echo "Version updated to ${GITHUB_REF/refs\/tags\//}"
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          NEW_VERSION="${VERSION}"
+          node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+  
+      - name: Print package.json
+        run: cat package.json
 
       - name: Build for Mac
         run: npm run build:mac
