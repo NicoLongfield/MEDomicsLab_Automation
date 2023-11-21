@@ -49,5 +49,27 @@ jobs:
       - name: Print package.json
         run: Get-Content package.json
 
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: 18.13
+
+      - name: Get tag name
+        shell: bash
+        run: |
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          NEW_VERSION="v${VERSION}"
+          node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+  
+      - name: Print package.json
+        run: cat package.json
+
 
   
