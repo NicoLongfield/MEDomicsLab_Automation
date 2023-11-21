@@ -159,10 +159,10 @@ jobs:
         with:
           name: linux-built
       
-      # - name: Download Mac
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: mac-built
+      - name: Download Mac
+        uses: actions/download-artifact@v3
+        with:
+          name: mac-built
 
       - name: Get folder structure
         run: |
@@ -180,8 +180,9 @@ jobs:
           files: |
             ./MEDomicsLab-${{ env.VERSION }}-win.exe
             ./MEDomicsLab-${{ env.VERSION }}-linux.deb
-          tag_name: ${{ github.ref }}
-          name: MEDomicsLab-${{ env.VERSION }}
+            ./MEDomicsLab-${{ env.VERSION }}-mac.dmg
+          tag_name: full-${{ github.ref }}
+          name: MEDomicsLab-${{ env.VERSION }}-full
           body: |
             ${{ github.ref }}
           draft: false

@@ -1,0 +1,201 @@
+
+name: Test zip
+on:
+  push:
+    tags:
+      - '*' # Push events to matching v*, i.e. v1.0, v20.15.10
+jobs:
+  # build-windows:
+  #   runs-on: windows-latest
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #           node-version: 18.13
+            
+  #     - name: Get tag name
+  #       shell: bash
+  #       run: |
+  #         VERSION=${GITHUB_REF/refs\/tags\//}
+  #         NEW_VERSION="${VERSION}"
+  #         node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+        
+  #     - name: Print package.json
+  #       run: Get-Content package.json
+            
+  #     - name: Install dependencies
+  #       run: npm install
+            
+
+  #     - name: Build for Windows
+  #       run: npm run build:win
+        
+  #     - name: Print folder structure
+  #       run: ls -R
+
+  #     - name: Get tag name
+  #       id: get-tag
+  #       shell: bash
+  #       run: |
+  #         VERSION=${GITHUB_REF/refs\/tags\//}
+  #         echo "::set-output name=VERSION::$VERSION"
+        
+  #     - name: Archive Windows 
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: windows-built
+  #         path: ./dist/MEDomicsLab-${{ env.VERSION }}-win.exe
+  #       env:
+  #         VERSION: ${{ steps.get-tag.outputs.VERSION }}
+
+  # build-linux:
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #           node-version: 18.13
+
+  #     - name: Get tag name
+  #       run: |
+  #         VERSION=${GITHUB_REF/refs\/tags\//}
+  #         NEW_VERSION="${VERSION}"
+  #         node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+
+  #     - name: Print package.json
+  #       run: cat package.json
+
+  #     - name: Install dependencies
+  #       run: npm install
+
+  #     - name: Build for Linux
+  #       run: npm run build:linux
+
+  #     - name: Print folder structure
+  #       run: ls -R
+
+  #     - name: Get tag name
+  #       id: get-tag
+  #       run: |
+  #         VERSION=${GITHUB_REF/refs\/tags\//}
+  #         echo "::set-output name=VERSION::$VERSION"
+        
+        
+  #     - name: Archive Linux
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: linux-built
+  #         path: ./dist/MEDomicsLab-${{ env.VERSION }}-linux.deb
+  #       env:
+  #         VERSION: ${{ steps.get-tag.outputs.VERSION }}
+
+  # build-mac:
+  #   runs-on: macos-latest
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #           node-version: 18.13
+                  
+  #     - name: Install node-gyp
+  #       run: npm install -g node-gyp
+    
+  #     - name: Install tfjs-node dependencies
+  #       run: npm install @tensorflow/tfjs-node@3.18.0
+        
+  #     - name: Install dependencies
+  #       run: npm install
+
+  #     - name: Update version
+  #       run: |
+  #         node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+  #         echo "Version updated to ${GITHUB_REF/refs\/tags\//}"
+
+  #     - name: Build for Mac
+  #       run: npm run build:mac
+      
+  #     - name: Get tag name
+  #       id: get-tag
+  #       run: |
+  #         VERSION=${GITHUB_REF/refs\/tags\//}
+  #         echo "::set-output name=VERSION::$VERSION"
+        
+
+  #     - name: Archive Mac
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: mac-built
+  #         path: ./dist/MEDomicsLab-${{ env.VERSION }}-mac.dmg
+  #       env:
+  #         VERSION: ${{ steps.get-tag.outputs.VERSION }}
+     
+
+  publish:
+    # needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # - name: Download Windows
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: windows-built
+      
+      # - name: Download Linux
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: linux-built
+      
+      # - name: Download Mac
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: mac-built
+
+      # - 
+      - name: Install zip
+        run: sudo apt-get install zip
+
+      - name: Get folder structure
+        run: |
+          ls -R
+
+      - name: zip Windows
+        run: zip -r MEDomicsLab-PythonEnv-win.zip ./pythonEnv/requirements.txt ./pythonEnv/create_conda_env_win.bat
+
+      - name: zip Linux
+        run: zip -r MEDomicsLab-PythonEnv-linux.zip ./pythonEnv/requirements.txt ./pythonEnv/create_conda_env_linux.sh
+
+      - name: Get tag name
+        id: get-tag
+        run: |
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          echo "::set-output name=VERSION::$VERSION"
+          
+      - name: Publish to GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./MEDomicsLab-PythonEnv-win.zip
+            ./MEDomicsLab-PythonEnv-linux.zip
+          tag_name: ${{ github.ref }}
+          name: MEDomicsLab-${{ env.VERSION }}
+          body: |
+            ${{ github.ref }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          VERSION: ${{ steps.get-tag.outputs.VERSION }}
