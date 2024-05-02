@@ -2,7 +2,7 @@ name: Full build and publish with versioning
 on:
   push:
     tags:
-      - "vmac*" # Push events to matching v*, i.e. v1.0, v20.15.10
+      - "mac*" # Push events to matching v*, i.e. v1.0, v20.15.10
 permissions:
   contents: write
 jobs:
@@ -103,7 +103,7 @@ jobs:
         id: get-tag
         run: |
           VERSION=${GITHUB_REF/refs\/tags\//}
-          echo "::set-output name=VERSION::${VERSION#v}"
+          echo "::set-output name=VERSION::${VERSION#mac}"
 
       - name: Archive Mac
         uses: actions/upload-artifact@v3
