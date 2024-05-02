@@ -93,8 +93,8 @@ jobs:
 
       - name: Update version
         run: |
-          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
-          echo "Version updated to ${GITHUB_REF/refs\/tags\//}"
+          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'.replace('mac', ''); require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          echo "Version updated to ${GITHUB_REF/refs\/tags\//}".replace('mac', '').replace('mac', '')
 
       # Before building the app, allocate more memory to the shell with the following command: export NODE_OPTIONS=--max-old-space-size=8192
       - name: Allocate more memory
