@@ -99,8 +99,11 @@ jobs:
 
       - name: Update version
         run: |
-          node -p "let pkg=require('./package.json'); pkg.version='${VERSION#mac}; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
-          echo "Version updated to ${VERSION#mac}"
+          node -p "let pkg=require('./package.json'); pkg.version='${{env.VERSION}}; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          echo "Version updated to ${{env.VERSION}}"
+        env:
+          VERSION: ${{ steps.get-tag.outputs.VERSION }}
+        
 
       # Before building the app, allocate more memory to the shell with the following command: export NODE_OPTIONS=--max-old-space-size=8192
       - name: Allocate more memory
