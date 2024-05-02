@@ -90,11 +90,17 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+      
+      - name: Get tag name
+        id: get-tag
+        run: |
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          echo "::set-output name=VERSION::${VERSION#mac}"
 
       - name: Update version
         run: |
-          node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'.replace('mac', ''); require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
-          echo "Version updated to ${GITHUB_REF/refs\/tags\//}".replace('mac', '').replace('mac', '')
+          node -p "let pkg=require('./package.json'); pkg.version='${VERSION#mac}; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          echo "Version updated to ${VERSION#mac}"
 
       # Before building the app, allocate more memory to the shell with the following command: export NODE_OPTIONS=--max-old-space-size=8192
       - name: Allocate more memory
@@ -102,12 +108,6 @@ jobs:
 
       - name: Build for Mac
         run: npm run build:mac
-
-      - name: Get tag name
-        id: get-tag
-        run: |
-          VERSION=${GITHUB_REF/refs\/tags\//}
-          echo "::set-output name=VERSION::${VERSION#mac}"
 
       - name: Archive Mac
         uses: actions/upload-artifact@v3
