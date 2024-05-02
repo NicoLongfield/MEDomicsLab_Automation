@@ -125,7 +125,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-
       - name: Download Mac
         uses: actions/download-artifact@v3
         with:
@@ -151,7 +150,7 @@ jobs:
         id: get-tag
         run: |
           VERSION=${GITHUB_REF/refs\/tags\//}
-          echo "::set-output name=VERSION::${VERSION#v}"
+          echo "::set-output name=VERSION::${VERSION#mac}"
 
       - name: Publish to GitHub
         uses: softprops/action-gh-release@v1
