@@ -99,7 +99,7 @@ jobs:
 
       - name: Update version
         run: |
-          node -p "let pkg=require('./package.json'); pkg.version='${{env.VERSION}}; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          node -p "let pkg=require('./package.json'); pkg.version='${{env.VERSION}}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
           echo "Version updated to ${{env.VERSION}}"
         env:
           VERSION: ${{ steps.get-tag.outputs.VERSION }}
