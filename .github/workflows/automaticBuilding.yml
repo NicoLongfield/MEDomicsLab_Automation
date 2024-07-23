@@ -102,7 +102,7 @@ jobs:
           cd ..
 
       - name: Prebuild libmongocrypt
-        run: ./utilScripts/libmongocrypt_prebuild.sh
+        run: bash ./utilScripts/libmongocrypt_prebuild.sh
 
       - name: Build for Linux
         run: npm run build:linux
