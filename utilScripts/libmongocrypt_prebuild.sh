@@ -8,4 +8,4 @@ bash ./etc/build-static.sh
 
 cd ../../..
 # Copy and overwrite the existing node bindings
-cp -r ./libmongocrypt/bindings/node/ ./node_modules/mongo-client-encryption
+cp -r ./libmongocrypt/bindings/node/ ./node_modules/mongodb-client-encryption
