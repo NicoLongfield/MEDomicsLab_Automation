@@ -6,6 +6,10 @@ cd bindings/node
 
 bash ./etc/build-static.sh
 
+npm run rebuild
+
 cd ../../..
 # Copy and overwrite the existing node bindings
-cp -r ./libmongocrypt/bindings/node/ ./node_modules/mongodb-client-encryption
+# Remove everything in the node_modules/mongodb-client-encryption directory
+rm -rf node_modules/mongodb-client-encryption/*
+cp -R libmongocrypt/bindings/node/ node_modules/mongodb-client-encryption
