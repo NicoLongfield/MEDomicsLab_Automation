@@ -2,123 +2,123 @@ name: Full build and publish with versioning
 on:
   push:
     tags:
-      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+      - "m*" # Push events to matching v*, i.e. v1.0, v20.15.10
 permissions:
   contents: write
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  # build-windows:
+  #   runs-on: windows-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.13
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: recursive
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 18.13
 
-      - name: Get tag name
-        shell: bash
-        run: |
-          VERSION=${GITHUB_REF/refs\/tags\//} # Remove "refs/tags/" from the beginning of the tag name 
-          NEW_VERSION="${VERSION}"
-          node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+  #     - name: Get tag name
+  #       shell: bash
+  #       run: |
+  #         VERSION=${GITHUB_REF/refs\/tags\//} # Remove "refs/tags/" from the beginning of the tag name 
+  #         NEW_VERSION="${VERSION}"
+  #         node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
 
-      - name: Print package.json
-        run: Get-Content package.json
+  #     - name: Print package.json
+  #       run: Get-Content package.json
 
-      - name: Install dependencies
-        run: npm install
+  #     - name: Install dependencies
+  #       run: npm install
 
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.21
+  #     - name: Setup Go
+  #       uses: actions/setup-go@v4
+  #       with:
+  #         go-version: 1.21
 
-      - name: Build go
-        run: |
-          cd go_server
-          go build main.go 
-          cd ..
+  #     - name: Build go
+  #       run: |
+  #         cd go_server
+  #         go build main.go 
+  #         cd ..
 
-      - name: Build for Windows
-        run: npm run build:win
+  #     - name: Build for Windows
+  #       run: npm run build:win
 
-      - name: Get tag name
-        id: get-tag
-        shell: bash
-        run: |
-          VERSION=${GITHUB_REF/refs\/tags\//}
-          echo "::set-output name=VERSION::${VERSION#v}"
+  #     - name: Get tag name
+  #       id: get-tag
+  #       shell: bash
+  #       run: |
+  #         VERSION=${GITHUB_REF/refs\/tags\//}
+  #         echo "::set-output name=VERSION::${VERSION#m}"
 
-      - name: Archive Windows
-        uses: actions/upload-artifact@v3
-        with:
-          name: windows-built
-          path: ./build/dist/MEDomicsLab-${{ env.VERSION }}-win.exe
-        env:
-          VERSION: ${{ steps.get-tag.outputs.VERSION }}
+  #     - name: Archive Windows
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: windows-built
+  #         path: ./build/dist/MEDomicsLab-${{ env.VERSION }}-win.exe
+  #       env:
+  #         VERSION: ${{ steps.get-tag.outputs.VERSION }}
 
-  build-linux-ubuntu:
-    runs-on: ubuntu-20.04
+  # build-linux-ubuntu:
+  #   runs-on: ubuntu-20.04
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: recursive
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.13
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 18.13
 
-      - name: Get tag name
-        run: |
-          VERSION=${GITHUB_REF/refs\/tags\//}
-          NEW_VERSION="${VERSION}"
-          node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+  #     - name: Get tag name
+  #       run: |
+  #         VERSION=${GITHUB_REF/refs\/tags\//}
+  #         NEW_VERSION="${VERSION}"
+  #         node -p "let pkg=require('./package.json'); pkg.version='$NEW_VERSION'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
 
-      - name: Print package.json
-        run: cat package.json
+  #     - name: Print package.json
+  #       run: cat package.json
 
-      - name: Install dependencies
-        run: npm install
+  #     - name: Install dependencies
+  #       run: npm install
 
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.21
+  #     - name: Setup Go
+  #       uses: actions/setup-go@v4
+  #       with:
+  #         go-version: 1.21
 
-      - name: Build go
-        run: |
-          cd go_server
-          go build main.go 
-          cd ..
+  #     - name: Build go
+  #       run: |
+  #         cd go_server
+  #         go build main.go 
+  #         cd ..
 
-      - name: Build for Linux
-        run: npm run build:linux
+  #     - name: Build for Linux
+  #       run: npm run build:linux
 
-      - name: Get tag name
-        id: get-tag
-        run: |
-          VERSION=${GITHUB_REF/refs\/tags\//}
-          echo "::set-output name=VERSION::${VERSION#v}"
+  #     - name: Get tag name
+  #       id: get-tag
+  #       run: |
+  #         VERSION=${GITHUB_REF/refs\/tags\//}
+  #         echo "::set-output name=VERSION::${VERSION#m}"
 
-      - name: Rename Linux
-        run: mv ./build/dist/MEDomicsLab-${{ env.VERSION }}-linux.deb ./build/dist/MEDomicsLab-${{ env.VERSION }}-ubuntu.deb
-        env:
-          VERSION: ${{ steps.get-tag.outputs.VERSION }}
+  #     - name: Rename Linux
+  #       run: mv ./build/dist/MEDomicsLab-${{ env.VERSION }}-linux.deb ./build/dist/MEDomicsLab-${{ env.VERSION }}-ubuntu.deb
+  #       env:
+  #         VERSION: ${{ steps.get-tag.outputs.VERSION }}
 
-      - name: Archive Linux
-        uses: actions/upload-artifact@v3
-        with:
-          name: linux-built-ubuntu
-          path: ./build/dist/MEDomicsLab-${{ env.VERSION }}-ubuntu.deb
-        env:
-          VERSION: ${{ steps.get-tag.outputs.VERSION }}
+  #     - name: Archive Linux
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: linux-built-ubuntu
+  #         path: ./build/dist/MEDomicsLab-${{ env.VERSION }}-ubuntu.deb
+  #       env:
+  #         VERSION: ${{ steps.get-tag.outputs.VERSION }}
 
   build-mac:
     runs-on: macos-latest
@@ -205,9 +205,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Prebuild libmongocrypt
-        run: ./utilScripts/libmongocrypt_prebuild.sh
-
       - name: Update version
         run: |
           node -p "let pkg=require('./package.json'); pkg.version='${GITHUB_REF/refs\/tags\//}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
@@ -224,7 +221,7 @@ jobs:
         id: get-tag
         run: |
           VERSION=${GITHUB_REF/refs\/tags\//}
-          echo "::set-output name=VERSION::${VERSION#v}"
+          echo "::set-output name=VERSION::${VERSION#m}"
 
       - name: Archive Mac
         uses: actions/upload-artifact@v3
@@ -236,7 +233,7 @@ jobs:
 
   # Publish to GitHub
   publish:
-    needs: [build-windows, build-linux-ubuntu, build-mac]
+    needs: [build-mac]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -283,7 +280,7 @@ jobs:
         id: get-tag
         run: |
           VERSION=${GITHUB_REF/refs\/tags\//}
-          echo "::set-output name=VERSION::${VERSION#v}"
+          echo "::set-output name=VERSION::${VERSION#m}"
 
       - name: Publish to GitHub
         uses: softprops/action-gh-release@v1
