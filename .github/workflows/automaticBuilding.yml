@@ -44,7 +44,7 @@ jobs:
           cd ..
 
       - name: Prebuild libmongocrypt
-        run: ./utilScripts/libmongocrypt_prebuild.sh
+        run: bash ./utilScripts/libmongocrypt_prebuild.sh
 
       - name: Build for Windows
         run: npm run build:win
@@ -212,7 +212,7 @@ jobs:
         run: npm install
 
       - name: Prebuild libmongocrypt
-        run: ./utilScripts/libmongocrypt_prebuild.sh
+        run: bash ./utilScripts/libmongocrypt_prebuild.sh
 
       - name: Update version
         run: |
