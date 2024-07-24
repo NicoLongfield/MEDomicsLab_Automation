@@ -1,6 +1,4 @@
 import React, { useContext, useEffect, useState } from "react"
-import Image from "next/image"
-import myimage from "../../../resources/medomics_transparent_bg.png"
 import { Button, Stack } from "react-bootstrap"
 import { WorkspaceContext } from "../workspace/workspaceContext"
 import { ipcRenderer } from "electron"
@@ -38,8 +36,7 @@ const HomePage = () => {
           <h2>Home page</h2>
           <Stack direction="horizontal" gap={0} style={{ padding: "0 0 0 0", alignContent: "center" }}>
             <h1 style={{ fontSize: "5rem" }}>MEDomicsLab </h1>
-
-            <Image src={myimage} alt="" style={{ height: "175px", width: "175px" }} />
+            <img src={("images/medomics_transparent_bg.png")} alt="" style={{ height: "175px", width: "175px" }} />
           </Stack>
           {hasBeenSet ? (
             <>
@@ -71,7 +68,11 @@ const HomePage = () => {
               </Stack>
             </>
           ) : (
-            <h5>Workspace is set to {workspace.workingDirectory.path}</h5>
+            <>
+              {workspace.workingDirectory.path && (
+                <h5>Workspace is set to {workspace.workingDirectory.path}</h5>
+              )}
+            </>
           )}
         </Stack>
       </div>

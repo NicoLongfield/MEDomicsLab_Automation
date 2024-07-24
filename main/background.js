@@ -480,7 +480,7 @@ function startMongoDB(workspacePath) {
 
     mongoProcess.on("error", (err) => {
       console.error("Failed to start MongoDB: ", err)
-      reject(err)
+      // reject(err)
     })
   } else {
     const errorMsg = `MongoDB config file does not exist: ${mongoConfigPath}`
@@ -500,7 +500,7 @@ async function stopMongoDB(mongoProcess) {
         mongoProcess.kill()
       } catch (error) {
         console.log("Error while stopping MongoDB ", error)
-        reject()
+        // reject()
       }
     } else {
       resolve()
