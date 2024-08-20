@@ -148,8 +148,23 @@ export function getBundledPythonEnvironment() {
 
   let bundledPythonPath = path.join(process.cwd(), "python")
   if (process.env.NODE_ENV === "production") {
-    bundledPythonPath = path.join(process.cwd(), "python")
+    // Get the user path followed by .medomics
+    let userPath = process.env.HOME
+    let medomicsPath = path.join(userPath, ".medomics")
+    // Check if the .medomics directory exists
+    if (fs.existsSync(medomicsPath)) {
+      // Check if the python directory exists
+      let pythonPath = path.join(medomicsPath, "python")
+      if (fs.existsSync(pythonPath)) {
+        bundledPythonPath = pythonPath
+      }
+    } else {
+      // Create the .medomics directory
+      fs.mkdirSync(medomicsPath)
+    }
+    bundledPythonPath = path.join(userPath, ".medomics", "python")
   }
+
 
   pythonEnvironment = path.join(bundledPythonPath, "bin", "python")
   if (process.platform == "win32") {
@@ -175,7 +190,11 @@ export function getInstalledPythonPackages(pythonPath = null) {
   } catch (error) {
     console.warn("Error retrieving python packages:", error)
   }
-  pythonPackages = JSON.parse(pythonPackagesOutput)
+  try {
+    pythonPackages = JSON.parse(pythonPackagesOutput)
+  } catch (error) {
+    console.warn(error)
+  }
   return pythonPackages
 }
 
@@ -230,7 +249,7 @@ export async function installBundledPythonExecutable(mainWindow) {
       let outputFileName = "cpython-3.9.18+20240224-x86_64-pc-windows-msvc-static-install_only.tar.gz"
 
       let downloadPromise = exec(`wget ${url} -O ${outputFileName}`, { shell: "powershell.exe" })
-
+      
       execCallbacksForChildWithNotifications(downloadPromise.child, "Python Downloading", mainWindow)
 
       const { stdout, stderr } = await downloadPromise

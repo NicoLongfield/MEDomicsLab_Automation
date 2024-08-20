@@ -464,7 +464,7 @@ function openWindowFromURL(url) {
 function startMongoDB(workspacePath) {
   const mongoConfigPath = path.join(workspacePath, ".medomics", "mongod.conf")
   if (fs.existsSync(mongoConfigPath)) {
-    console.log("Starting MongoDB with config: ", mongoConfigPath)
+    console.log("Starting MongoDB with config: " + mongoConfigPath)
     mongoProcess = spawn("mongod", ["--config", mongoConfigPath])
     mongoProcess.stdout.on("data", (data) => {
       console.log(`MongoDB stdout: ${data}`)

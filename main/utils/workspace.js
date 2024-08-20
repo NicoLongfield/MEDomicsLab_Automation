@@ -205,9 +205,12 @@ export const createMedomicsDirectory = (directoryPath) => {
     storage:
       dbPath: ${mongoDataDir}
     net:
-      bindIp: 127.0.0.1
+      bindIp: localhost
       port: 54017
     `
+    // net:
+    //   bindIp: 127.0.0.1
+    //   port: 54017
     fs.writeFileSync(mongoConfigPath, mongoConfig)
   }
 }
