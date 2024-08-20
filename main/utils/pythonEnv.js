@@ -289,9 +289,11 @@ export async function installBundledPythonExecutable(mainWindow) {
 
       let downloadPromise = exec(`wget ${url}`)
       execCallbacksForChildWithNotifications(downloadPromise.child, "Python Downloading", mainWindow)
+      const { stdout, stderr } = await downloadPromise
       // Extract the python executable
       let extractionPromise = exec(extractCommand)
       execCallbacksForChildWithNotifications(extractionPromise.child, "Python Exec. Extracting", mainWindow)
+      const { stdout: extrac, stderr: extracErr } = await extractionPromise
       // Install the required python packages
       installPythonPackage(mainWindow, pythonExecutablePath, null, path.join(process.cwd(), "pythonEnv", "requirements.txt"))
     }
