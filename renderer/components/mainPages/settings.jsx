@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useContext } from "react"
 import { connectToMongoDB } from "../mongoDB/mongoDBUtils"
 var path = require("path")
-
+import fs from "fs"
 const {spawn } = require("child_process")
 import { ipcRenderer } from "electron"
 import ModulePage from "./moduleBasics/modulePage"
@@ -108,8 +108,9 @@ const SettingsPage = () => {
   const startMongo = () => {
     let workspacePath = workspace.workingDirectory.path
     const mongoConfigPath = path.join(workspacePath, ".medomics", "mongod.conf")
-
-    let mongoResult = spawn("mongod", ["--config", mongoConfigPath])
+    let mongod = getMongoDBPath()
+    let mongoResult = spawn(mongod, ["--config", mongoConfigPath])
+    
     mongoResult.stdout.on("data", (data) => {
       console.log(`MongoDB stdout: ${data}`)
     })
@@ -129,6 +130,35 @@ const SettingsPage = () => {
     console.log("Mongo result from start ", mongoResult)
   }
 
+  function getMongoDBPath() {
+    if (process.platform === "win32") {
+      // Check if mongod is in the process.env.PATH
+      const paths = process.env.PATH.split(path.delimiter)
+      for (let i = 0; i < paths.length; i++) {
+        const binPath = path.join(paths[i], "mongod.exe")
+        if (fs.existsSync(binPath)) {
+          return binPath
+        }
+      }
+  
+      // Check if mongod is in the default installation path on Windows - C:\Program Files\MongoDB\Server\<version to establish>\bin\mongod.exe
+      const programFilesPath = process.env["ProgramFiles"]
+      if (programFilesPath) {
+        const mongoPath = path.join(programFilesPath, "MongoDB", "Server")
+        const dirs = fs.readdirSync(mongoPath)
+        for (let i = 0; i < dirs.length; i++) {
+          const binPath = path.join(mongoPath, dirs[i], "bin", "mongod.exe")
+          if (fs.existsSync(binPath)) {
+            return binPath
+          }
+        }
+      }
+      console.error("mongod not found")
+      return null
+    } else {
+      return "mongod"
+    }
+  }
 
   /**
    * 

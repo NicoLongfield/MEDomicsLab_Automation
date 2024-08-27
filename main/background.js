@@ -465,7 +465,8 @@ function startMongoDB(workspacePath) {
   const mongoConfigPath = path.join(workspacePath, ".medomics", "mongod.conf")
   if (fs.existsSync(mongoConfigPath)) {
     console.log("Starting MongoDB with config: " + mongoConfigPath)
-    mongoProcess = spawn("mongod", ["--config", mongoConfigPath])
+    let mongod = getMongoDBPath()
+    mongoProcess = spawn(mongod, ["--config", mongoConfigPath])
     mongoProcess.stdout.on("data", (data) => {
       console.log(`MongoDB stdout: ${data}`)
     })
@@ -506,4 +507,36 @@ async function stopMongoDB(mongoProcess) {
       resolve()
     }
   })
+}
+
+
+function getMongoDBPath() {
+  if (process.platform === "win32") {
+    // Check if mongod is in the process.env.PATH
+    const paths = process.env.PATH.split(path.delimiter)
+    for (let i = 0; i < paths.length; i++) {
+      const binPath = path.join(paths[i], "mongod.exe")
+      if (fs.existsSync
+        (binPath)) {
+        return binPath
+      }
+    }
+
+    // Check if mongod is in the default installation path on Windows - C:\Program Files\MongoDB\Server\<version to establish>\bin\mongod.exe
+    const programFilesPath = process.env["ProgramFiles"]
+    if (programFilesPath) {
+      const mongoPath = path.join(programFilesPath, "MongoDB", "Server")
+      const dirs = fs.readdirSync(mongoPath)
+      for (let i = 0; i < dirs.length; i++) {
+        const binPath = path.join(mongoPath, dirs[i], "bin", "mongod.exe")
+        if (fs.existsSync(binPath)) {
+          return binPath
+        }
+      }
+    }
+    console.error("mongod not found")
+    return null
+  } else {
+    return "mongod"
+  }
 }
