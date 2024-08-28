@@ -130,6 +130,12 @@ const SettingsPage = () => {
     console.log("Mongo result from start ", mongoResult)
   }
 
+  const installMongoDB = () => {
+    ipcRenderer.invoke("installMongoDB").then((success) => {
+      console.log("MongoDB installed: ", success)
+    })
+  }
+  
   function getMongoDBPath() {
     if (process.platform === "win32") {
       // Check if mongod is in the process.env.PATH
@@ -272,6 +278,18 @@ const SettingsPage = () => {
                     style={{ backgroundColor: serverIsRunning ? "#d55757" : "grey", borderColor: serverIsRunning ? "#d55757" : "grey" }}
                     disabled={!serverIsRunning}
                   />
+                  <Button
+                  label="Install MongoDB"
+                  className="p-button-secondary"
+                  onClick={() => {
+                    ipcRenderer.invoke("installMongoDB").then((result) => {
+                    
+                        console.log("MongoDB installed: ", result)
+                    })
+                  }}
+                  style={{ backgroundColor: serverIsRunning ? "#d55757" : "grey", borderColor: serverIsRunning ? "#d55757" : "grey" }}
+                  // disabled={!serverIsRunning}
+                />
                 </Col>
                 <Col xs={12} md={12} style={{ display: "flex", flexDirection: "row", justifyContent: "flex-start", alignItems: "center", flexWrap: "wrap", marginTop: ".75rem" }}>
                   <Col xs={12} md="auto" style={{ display: "flex", flexDirection: "row", justifyContent: "flex-start", alignItems: "center", flexWrap: "wrap" }}>

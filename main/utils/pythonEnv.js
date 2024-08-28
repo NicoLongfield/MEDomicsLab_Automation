@@ -1,4 +1,3 @@
-import { main } from "@popperjs/core"
 import { app } from "electron"
 const fs = require("fs")
 var path = require("path")
@@ -216,7 +215,7 @@ export async function installPythonPackage(mainWindow, pythonPath, packageName =
   }
 }
 
-function execCallbacksForChildWithNotifications(child, id, mainWindow) {
+export function execCallbacksForChildWithNotifications(child, id, mainWindow) {
   mainWindow.webContents.send("notification", { id: id, message: `Starting...`, header: `${id} in progress` })
   child.stdout.on("data", (data) => {
     mainWindow.webContents.send("notification", { id: id, message: `stdout: ${data}`, header: `${id} in progress` })

@@ -7,6 +7,7 @@ import MEDconfig from "../medomics.dev"
 import { runServer, killProcessOnPort } from "./utils/server"
 import { setWorkingDirectory, getRecentWorkspacesOptions, loadWorkspaces, createMedomicsDirectory } from "./utils/workspace"
 import { getBundledPythonEnvironment, getInstalledPythonPackages, installPythonPackage, installBundledPythonExecutable } from "./utils/pythonEnv"
+import { installMongoDB } from "./utils/installation"
 const fs = require("fs")
 var path = require("path")
 let mongoProcess = null
@@ -18,7 +19,7 @@ var hasBeenSet = false
 const isProd = process.env.NODE_ENV === "production"
 var serverIsRunning = false
 let splashScreen // The splash screen is the window that is displayed while the application is loading
-var mainWindow // The main window is the window of the application
+export var mainWindow // The main window is the window of the application
 
 //**** LOG ****// This is used to send the console.log messages to the main window
 const originalConsoleLog = console.log
@@ -406,6 +407,10 @@ ipcMain.handle("getInstalledPythonPackages", async (event, pythonPath) => {
   return getInstalledPythonPackages(pythonPath)
 })
 
+ipcMain.handle("installMongoDB", async (event) => {
+  return installMongoDB()
+})
+
 ipcMain.handle("getBundledPythonEnvironment", async (event) => {
   return getBundledPythonEnvironment()
 })
@@ -510,7 +515,7 @@ async function stopMongoDB(mongoProcess) {
 }
 
 
-function getMongoDBPath() {
+export function getMongoDBPath() {
   if (process.platform === "win32") {
     // Check if mongod is in the process.env.PATH
     const paths = process.env.PATH.split(path.delimiter)
@@ -526,6 +531,11 @@ function getMongoDBPath() {
     const programFilesPath = process.env["ProgramFiles"]
     if (programFilesPath) {
       const mongoPath = path.join(programFilesPath, "MongoDB", "Server")
+      // Check if the MongoDB directory exists
+      if (!fs.existsSync(mongoPath)) {
+        console.error("MongoDB directory not found")
+        return null
+      }
       const dirs = fs.readdirSync(mongoPath)
       for (let i = 0; i < dirs.length; i++) {
         const binPath = path.join(mongoPath, dirs[i], "bin", "mongod.exe")
