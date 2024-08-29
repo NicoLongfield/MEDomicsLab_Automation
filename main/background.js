@@ -7,6 +7,7 @@ import MEDconfig from "../medomics.dev"
 import { runServer, killProcessOnPort } from "./utils/server"
 import { setWorkingDirectory, getRecentWorkspacesOptions, loadWorkspaces, createMedomicsDirectory } from "./utils/workspace"
 import { getBundledPythonEnvironment, getInstalledPythonPackages, installPythonPackage, installBundledPythonExecutable } from "./utils/pythonEnv"
+import { installMongoDB } from "./utils/installation"
 const fs = require("fs")
 var path = require("path")
 let mongoProcess = null
@@ -18,7 +19,7 @@ var hasBeenSet = false
 const isProd = process.env.NODE_ENV === "production"
 var serverIsRunning = false
 let splashScreen // The splash screen is the window that is displayed while the application is loading
-var mainWindow // The main window is the window of the application
+export var mainWindow // The main window is the window of the application
 
 //**** LOG ****// This is used to send the console.log messages to the main window
 const originalConsoleLog = console.log
@@ -406,6 +407,10 @@ ipcMain.handle("getInstalledPythonPackages", async (event, pythonPath) => {
   return getInstalledPythonPackages(pythonPath)
 })
 
+ipcMain.handle("installMongoDB", async (event) => {
+  return installMongoDB()
+})
+
 ipcMain.handle("getBundledPythonEnvironment", async (event) => {
   return getBundledPythonEnvironment()
 })
@@ -465,9 +470,10 @@ function startMongoDB(workspacePath) {
   const mongoConfigPath = path.join(workspacePath, ".medomics", "mongod.conf")
   if (fs.existsSync(mongoConfigPath)) {
     console.log("Starting MongoDB with config: " + mongoConfigPath)
+    let mongod = getMongoDBPath()
     if (process.platform !=="darwin") {
 
-    mongoProcess = spawn("mongod", ["--config", mongoConfigPath])
+    mongoProcess = spawn(mongod, ["--config", mongoConfigPath])
     } else {
       mongoProcess = spawn("/opt/homebrew/Cellar/mongodb-community/7.0.12/bin/mongod", ["--config", mongoConfigPath], {shell: true})
     }
@@ -511,4 +517,41 @@ async function stopMongoDB(mongoProcess) {
       resolve()
     }
   })
+}
+
+
+export function getMongoDBPath() {
+  if (process.platform === "win32") {
+    // Check if mongod is in the process.env.PATH
+    const paths = process.env.PATH.split(path.delimiter)
+    for (let i = 0; i < paths.length; i++) {
+      const binPath = path.join(paths[i], "mongod.exe")
+      if (fs.existsSync
+        (binPath)) {
+        return binPath
+      }
+    }
+
+    // Check if mongod is in the default installation path on Windows - C:\Program Files\MongoDB\Server\<version to establish>\bin\mongod.exe
+    const programFilesPath = process.env["ProgramFiles"]
+    if (programFilesPath) {
+      const mongoPath = path.join(programFilesPath, "MongoDB", "Server")
+      // Check if the MongoDB directory exists
+      if (!fs.existsSync(mongoPath)) {
+        console.error("MongoDB directory not found")
+        return null
+      }
+      const dirs = fs.readdirSync(mongoPath)
+      for (let i = 0; i < dirs.length; i++) {
+        const binPath = path.join(mongoPath, dirs[i], "bin", "mongod.exe")
+        if (fs.existsSync(binPath)) {
+          return binPath
+        }
+      }
+    }
+    console.error("mongod not found")
+    return null
+  } else {
+    return "mongod"
+  }
 }

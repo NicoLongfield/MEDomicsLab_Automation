@@ -69,7 +69,7 @@ const HomePage = () => {
             </>
           ) : (
             <>
-              {workspace.workingDirectory.path && (
+              {workspace.workingDirectory && workspace.workingDirectory.path && (
                 <h5>Workspace is set to {workspace.workingDirectory.path}</h5>
               )}
             </>
