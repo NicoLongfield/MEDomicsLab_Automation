@@ -1,4 +1,4 @@
-import { app, ipcMain, Menu, dialog, BrowserWindow, protocol } from "electron"
+import { app, ipcMain, Menu, dialog, BrowserWindow, protocol, shell } from "electron"
 import axios from "axios"
 import serve from "electron-serve"
 import { createWindow } from "./helpers"
@@ -465,7 +465,12 @@ function startMongoDB(workspacePath) {
   const mongoConfigPath = path.join(workspacePath, ".medomics", "mongod.conf")
   if (fs.existsSync(mongoConfigPath)) {
     console.log("Starting MongoDB with config: " + mongoConfigPath)
+    if (process.platform !=="darwin") {
+
     mongoProcess = spawn("mongod", ["--config", mongoConfigPath])
+    } else {
+      mongoProcess = spawn("/opt/homebrew/Cellar/mongodb-community/7.0.12/bin/mongod", ["--config", mongoConfigPath], {shell: true})
+    }
     mongoProcess.stdout.on("data", (data) => {
       console.log(`MongoDB stdout: ${data}`)
     })
