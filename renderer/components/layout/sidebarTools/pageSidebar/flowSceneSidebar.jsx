@@ -55,7 +55,7 @@ const FlowSceneSidebar = ({ type }) => {
    * @description - This function is used to create an empty scene
    */
   const createEmptyScene = async (name) => {
-    let path = Path.join(globalData[UUID_ROOT].path, EXPERIMENTS)
+    let path = Path.join(workspace.workingDirectory.path, EXPERIMENTS)
     createSceneContent(path, name, typeInfo[type].extension)
   }
 
