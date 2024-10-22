@@ -1,0 +1,33 @@
+#!/bin/sh
+# Install MongoDB Community Edition on MacOS
+# https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/
+xcode-select --install
+
+MEDOMICS_DIR=~/.medomics
+echo "Creating directory $MEDOMICS_DIR"
+if [ ! -d "$MEDOMICS_DIR" ]; then
+    mkdir $MEDOMICS_DIR
+fi
+
+# Check if Homebrew is installed
+if test ! $(which brew); then
+    echo "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+fi
+
+# Check if MongoDB is installed
+if test $(which mongod); then
+    echo "MongoDB is already installed"
+    exit 0
+else
+    echo "Installing MongoDB..."
+    # Install MongoDB
+    brew tap mongodb/brew
+    brew update
+    brew install mongodb-community@7.0
+fi
+
+exit 0
+
+# Create a directory for MEDomics specific tools and data
+# Preinstall script for MEDomics - so we do not have access to environment variables
